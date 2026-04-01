@@ -127,6 +127,11 @@ namespace sys::relation::application
         }
     }
 
+    RelationApplicationService::CheckSendMessagePermissionResponse RelationApplicationService::
+    checkSendMessagePermission()
+    {
+    }
+
     bool RelationApplicationService::checkConfigAndSetResponse(contract::BaseResponse& response)
     {
         if (friendApplicationService == nullptr || friendApplicationViewAssembler

@@ -30,7 +30,11 @@ namespace sys::message::domain
     {
     private:
         const QDateTime sendTime;
-        const QString sentUserId;
+        const QString senderUserId;
+
+    public:
+        QDateTime sendTimeVal();
+        QString senderUserIdVal();
     };
 
     class Content
@@ -38,6 +42,15 @@ namespace sys::message::domain
     public:
         virtual ~Content() = default;
         virtual ContentType getContentType() = 0;
+    };
+
+    class ContentFactory
+    {
+    public:
+        static QSharedPointer<Content> createTextContent(const QString& text);
+        // QSharedPointer<Content> createPhotoContent(const QString& fileId, const std::optional<QByteArray>& content);
+        // QSharedPointer<Content> createDocumentContent(const QString& fileId, const std::optional<QByteArray>& content, const QString& name);
+        // QSharedPointer<Content> createSpeechContent(const QString& fileId, const std::optional<QByteArray>& content, const Duration& duration);
     };
 
     class FileContent : public Content
@@ -51,6 +64,13 @@ namespace sys::message::domain
     {
     public:
         ContentType getContentType() override;
+        static bool checkText(const QString& text);
+        static QSharedPointer<TextContent> of(const QString& text);
+
+        QString textValue();
+
+    private:
+        explicit TextContent(const QString& text);
 
     private:
         const QString text;
@@ -100,8 +120,25 @@ namespace sys::message::domain
     {
     private:
         QString messageId;
-        int seqInChatSession = 0;
+        int seqInChatSession;
         SendingInfo sendingInfo;
-        QSharedPointer<Content> content;
+        QSharedPointer<Content> content; // 这里设置为指针是为了支持多态
+    public:
+        static QSharedPointer<Message> ofTextMessage(const QString& messageId, int seqInChatSession,
+                                                     const QDateTime& sendTime, const QString& senderUserId,
+                                                     const QString& text);
+        // static QSharedPointer<Message> ofPhotoMessage();
+        // static QSharedPointer<Message> ofDocumentMessage();
+        // static QSharedPointer<Message> ofSpeechMessage();
+
+        QString messageIdValue();
+        int seqInChatSessionValue();
+        QDateTime sendTimeValue();
+        QString senderUserIdValue();
+        QSharedPointer<Content> contentValue();
+
+    private:
+        Message(const QString& messageId, int seqInChatSession, const SendingInfo& sendingInfo,
+                const QSharedPointer<Content>& content);
     };
 }

@@ -63,6 +63,7 @@ set(IMS_SHARED_EXECUTABLE_SOURCES
 
         sys/message-context/domain/object/cpp/Message.cpp
         sys/message-context/domain/object/include/Message.h
+        sys/message-context/domain/exception/ChatSessionNotFoundException.h
 
         sys/notification-context/adapter/manager/cpp/NotificationConnectionManagerAdapter.cpp
         sys/notification-context/adapter/manager/include/NotificationConnectionManagerAdapter.h
@@ -193,6 +194,21 @@ set(IMS_SHARED_EXECUTABLE_SOURCES
         ui/message-widgets/include/MessageInputWidget.h
         ui/message-widgets/include/ChatSessionTitleWidget.h
         sys/common/component/FileUtil.h
+        sys/message-context/domain/exception/FriendShipNotFoundException.h
+        sys/message-context/domain/exception/NotParticipantException.h
+        sys/message-context/domain/exception/InvalidTextException.h
+        sys/message-context/domain/service/cpp/MessageService.cpp
+        sys/message-context/domain/service/include/MessageService.h
+        sys/message-context/domain/service/cpp/SenderValidator.cpp
+        sys/message-context/domain/service/include/SenderValidator.h
+        sys/message-context/port/client/cpp/RelationClient.cpp
+        sys/message-context/port/client/include/RelationClient.h
+        sys/message-context/port/client/cpp/BackendClient.cpp
+        sys/message-context/port/client/include/BackendClient.h
+        sys/message-context/adapter/client/cpp/BackendClientAdapter.cpp
+        sys/message-context/adapter/client/include/BackendClientAdapter.h
+        sys/message-context/adapter/client/cpp/RelationClientAdapter.cpp
+        sys/message-context/adapter/client/include/RelationClientAdapter.h
 )
 
 set(IMS_SHARED_LINK_LIBS

@@ -46,6 +46,22 @@ namespace sys::relation::application
         // 获取所有聊天会话: 暂时只获取单聊会话，群聊会话后续再扩展
         QList<contract::relation::ChatSessionView> getChatSessions();
 
+        enum class NoPermissionReason
+        {
+            ChatSessionNotFound,
+            NotParticipant,
+            NotFriend,
+            Other
+        };
+
+        struct CheckSendMessagePermissionResponse
+        {
+            bool hasPermissionToSendMessage;
+            std::optional<NoPermissionReason> noPermissionReason;
+        };
+
+        CheckSendMessagePermissionResponse checkSendMessagePermission();
+
     private:
         domain::FriendApplicationService* friendApplicationService = nullptr;
         FriendApplicationViewAssembler* friendApplicationViewAssembler = nullptr;
