@@ -305,6 +305,7 @@ set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES
 )
 
 
+# 收集 .cpp 文件
 file(GLOB_RECURSE TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../tests/*.cpp)
 add_executable(run_tests
         ${TEST_SOURCES}
@@ -327,8 +328,8 @@ add_executable(run_tests
         ../tests/user-context/application/GetUserTest.cpp
         ../tests/user-context/application/GetUsersTest.cpp
         ../tests/file-context/application/FileApplicationServiceTest.cpp
-        ../tests/message-context/domain/MessageTest.cpp
-        ../tests/relation-context/application/service/RelationApplicationServiceTestFixture.cpp
+        ../tests/message-context/domain/object/MessageTest.cpp
+        ../tests/message-context/domain/service/MessageServiceTest.cpp
 )
 
 
@@ -362,3 +363,5 @@ target_include_directories(run_tests PRIVATE
         ${IMS_SHARED_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}/../tests
 )
+
+gtest_discover_tests(run_tests)

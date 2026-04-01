@@ -10,6 +10,9 @@ namespace sys
     {
         namespace domain
         {
+            void MessageService::sendTextMessage(const QString& chatSessionId, const QString& text)
+            {
+            }
         } // domain
     } // message
 } // sys

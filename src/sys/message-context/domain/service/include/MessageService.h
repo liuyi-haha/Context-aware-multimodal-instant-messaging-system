@@ -3,15 +3,25 @@
 //
 
 #pragma once
-namespace sys
+#include "dependencyinjector.h"
+#include "SenderValidator.h"
+#include "sys/message-context/port/client/include/BackendClient.h"
+
+namespace sys::message::domain
 {
-    namespace message
+    class MessageService
     {
-        namespace domain
+    public:
+        explicit MessageService(port::BackendClient* backendClient)
+            : backendClient(backendClient)
         {
-            class MessageService
-            {
-            };
-        } // domain
-    } // message
-} // sys
+        }
+
+    public:
+        void sendTextMessage(const QString& chatSessionId, const QString& text);
+
+    private:
+        port::BackendClient* backendClient = QInjection::Inject;
+        SenderValidator* senderValidator = QInjection::Inject;
+    };
+}

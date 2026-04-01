@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "relation-context/application/fake/PrivateDataBaseFake.h"
-#include "relation-context/application/fake/RelationChatApiGatewayFake.h"
+#include "relation-context/application/fake/ChatApiGatewayFake.h"
 #include "sys/common/component/UserCredentialManager.h"
 #include "sys/relation-context/adapter/client/include/BackendClientAdapter.h"
 #include "sys/relation-context/adapter/repository/include/FriendApplicationRepositoryAdapter.h"

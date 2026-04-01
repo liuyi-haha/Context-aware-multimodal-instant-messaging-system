@@ -3,13 +3,21 @@
 //
 #include "dependencyinjector.h"
 #include "sys/message-context/port/client/include/RelationClient.h"
+#include <QObject>
 #pragma once
 namespace sys::message::domain
 {
-    class SenderValidator
+    class SenderValidator : public QObject
     {
+        Q_OBJECT
+
     public:
         void checkSenderHasPermissionToSendMessage();
+
+        explicit SenderValidator(port::RelationClient* relationClient)
+            : relationClient(relationClient)
+        {
+        }
 
     private:
         port::RelationClient* relationClient = QInjection::Inject;

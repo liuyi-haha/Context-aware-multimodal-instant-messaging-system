@@ -5,6 +5,8 @@
 #pragma once
 #include <QObject>
 
+#include "sys/message-context/domain/object/include/Message.h"
+
 namespace sys::message::port
 {
     class BackendClient : public QObject
@@ -12,6 +14,6 @@ namespace sys::message::port
         Q_OBJECT
 
     public:
-        virtual void sendTextMessage() = 0;
+        virtual void sendTextMessage(const QString& chatSessionId, const QString& text) = 0;
     };
 }

@@ -6,7 +6,12 @@
 
 namespace sys::message::adapter
 {
-    void BackendClientAdapter::sendTextMessage()
+    void BackendClientAdapter::sendTextMessage(const QString& chatSessionId, const QString& text)
+    {
+    }
+
+    OpenAPIChat::OAIChatSendTextMessage_200_response ChatApiGatewayAdapter::sendTextMessage(
+        const OpenAPIChat::OAIChatSendTextMessage_request& request)
     {
     }
 }
