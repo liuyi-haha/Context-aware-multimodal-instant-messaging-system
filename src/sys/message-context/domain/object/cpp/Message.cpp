@@ -4,33 +4,47 @@
 
 #include "../include/Message.h"
 
+#include "sys/message-context/domain/exception/InvalidTextException.h"
+
 namespace sys::message::domain
 {
-    QDateTime SendingInfo::sendTimeVal()
+    SendingInfo::SendingInfo(const QDateTime& sendTime, const QString& senderUserId)
+        : sendTime(sendTime),
+          senderUserId(senderUserId)
+    {
+    }
+
+    QDateTime SendingInfo::sendTimeVal() const
     {
         return sendTime;
     }
 
-    QString SendingInfo::senderUserIdVal()
+    QString SendingInfo::senderUserIdVal() const
     {
         return senderUserId;
     }
 
     QSharedPointer<Content> ContentFactory::createTextContent(const QString& text)
     {
-        return nullptr;
+        return TextContent::of(text);
     }
 
     TextContent::TextContent(const QString& text)
+        : text(text)
     {
-        // 如果不合法则抛异常
+        if (!checkText(text))
+        {
+            throw InvalidTextException();
+        }
     }
 
     QSharedPointer<Message> Message::ofTextMessage(const QString& messageId, int seqInChatSession,
                                                    const QDateTime& sendTime, const QString& senderUserId,
                                                    const QString& text)
     {
-        return nullptr;
+        const SendingInfo sendingInfo(sendTime, senderUserId);
+        const auto content = ContentFactory::createTextContent(text);
+        return QSharedPointer<Message>(new Message(messageId, seqInChatSession, sendingInfo, content));
     }
 
     QString Message::messageIdValue()
@@ -75,15 +89,15 @@ namespace sys::message::domain
 
     bool TextContent::checkText(const QString& text)
     {
-        return false;
+        return !text.isEmpty() && text.size() <= 1000;
     }
 
     QSharedPointer<TextContent> TextContent::of(const QString& text)
     {
-        return nullptr;
+        return QSharedPointer<TextContent>(new TextContent(text));
     }
 
-    QString TextContent::textValue()
+    QString TextContent::textValue() const
     {
         return text;
     }

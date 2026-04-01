@@ -6,6 +6,7 @@
 
 #include <QByteArray>
 #include <QDateTime>
+#include <QSharedPointer>
 #include <QString>
 
 #include "sys/common/FileSize.hpp"
@@ -33,8 +34,9 @@ namespace sys::message::domain
         const QString senderUserId;
 
     public:
-        QDateTime sendTimeVal();
-        QString senderUserIdVal();
+        SendingInfo(const QDateTime& sendTime, const QString& senderUserId);
+        QDateTime sendTimeVal() const;
+        QString senderUserIdVal() const;
     };
 
     class Content
@@ -67,7 +69,7 @@ namespace sys::message::domain
         static bool checkText(const QString& text);
         static QSharedPointer<TextContent> of(const QString& text);
 
-        QString textValue();
+        QString textValue() const;
 
     private:
         explicit TextContent(const QString& text);

@@ -328,6 +328,7 @@ add_executable(run_tests
         ../tests/user-context/application/GetUsersTest.cpp
         ../tests/file-context/application/FileApplicationServiceTest.cpp
         ../tests/message-context/domain/MessageTest.cpp
+        ../tests/relation-context/application/service/RelationApplicationServiceTestFixture.cpp
 )
 
 

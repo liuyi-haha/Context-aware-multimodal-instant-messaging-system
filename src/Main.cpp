@@ -25,10 +25,8 @@
 #include "sys/common/component/UserCredentialManager.h"
 #include "sys/relation-context/domain/object/include/FriendApplication.h"
 #include "sys/relation-context/port/repository/include/FriendApplicationRepository.h"
-#include "ui/main-widgets/include/MainWindow.h"
 #include "sys/starter/include/AppStarter.h"
 #include "ui/user-widgets/include/RegisterWidget.h"
-#include "ui/user-widgets/include/UserIdDisplayWidget.h"
 
 void seedApplication(const QString& friendApplicationId,
                      const QString& applicantUserId,

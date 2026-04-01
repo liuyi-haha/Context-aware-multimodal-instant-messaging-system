@@ -34,14 +34,14 @@ TEST_F(MessageTest, 当文本文本内容不合法时_调用TextContent的构造
     tests::utils::expectThrowWithMessage<sys::message::domain::InvalidTextException>(
         [&]
         {
-            sys::message::domain::TextContent::checkText(emptyText);
+            auto content = sys::message::domain::TextContent::of(emptyText);
         },
         "消息文本长度不合法");
 
     tests::utils::expectThrowWithMessage<sys::message::domain::InvalidTextException>(
         [&]
         {
-            sys::message::domain::TextContent::checkText(tooLongText);
+            auto content = sys::message::domain::TextContent::of(tooLongText);
         },
         "消息文本长度不合法");
 }

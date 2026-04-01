@@ -13,7 +13,7 @@
 
 namespace tests::relation::application::get_chat_sessions
 {
-    TEST_F(RelationApplicationServiceTest, 获取所有聊天会话时_如果没有聊天会话_应该返回空列表)
+    TEST_F(RelationApplicationServiceTestFixture, 获取所有聊天会话时_如果没有聊天会话_应该返回空列表)
     {
         EXPECT_CALL(*mockMessageClient, getLastMessageInfos(testing::_)).Times(0);
         EXPECT_CALL(*mockNotificationClient, getUnreadChatSessionItemCount(testing::_)).Times(0);
@@ -24,7 +24,7 @@ namespace tests::relation::application::get_chat_sessions
         EXPECT_TRUE(chatSessions.isEmpty());
     }
 
-    TEST_F(RelationApplicationServiceTest, 获取所有聊天会话时_如果只有一个单聊会话_单聊会话的信息应该完整且正确)
+    TEST_F(RelationApplicationServiceTestFixture, 获取所有聊天会话时_如果只有一个单聊会话_单聊会话的信息应该完整且正确)
     {
         // 准备本地仓储
         const QString friendShipId = "FS-001";
@@ -80,7 +80,7 @@ namespace tests::relation::application::get_chat_sessions
         EXPECT_EQ(chatSession.unreadCount, 3);
     }
 
-    TEST_F(RelationApplicationServiceTest, 获取所有聊天会话时_如果包含聊天会话的最后一条消息有四种不同类型_消息摘要栏应该能区别显示)
+    TEST_F(RelationApplicationServiceTestFixture, 获取所有聊天会话时_如果包含聊天会话的最后一条消息有四种不同类型_消息摘要栏应该能区别显示)
     {
         // 创建四个聊天会话
         const QString friendShipId1 = "FS-001";
@@ -168,7 +168,7 @@ namespace tests::relation::application::get_chat_sessions
         EXPECT_EQ(chatSessions[3].lastMessageSummary, "[语音]");
     }
 
-    TEST_F(RelationApplicationServiceTest, 获取所有聊天会话时_如果有多个单聊会话_单聊会话应该按照最后一条消息的发送时间降序排序)
+    TEST_F(RelationApplicationServiceTestFixture, 获取所有聊天会话时_如果有多个单聊会话_单聊会话应该按照最后一条消息的发送时间降序排序)
     {
         // 创建三个聊天会话
         const QString friendShipId1 = "FS-001";
