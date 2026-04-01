@@ -1,0 +1,9 @@
+UserApplicationService.getUser(GetUserRequest){
+  UserService.getUser(QString userId){
+    UserRepository.UserOf(QString userId)
+    // 如果找不到就访问后端
+    BackendClient.getUser(QString userId)
+    UserRepository.save(User)
+  }
+
+}

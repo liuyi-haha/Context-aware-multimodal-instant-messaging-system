@@ -1,0 +1,10 @@
+RelationApplicationService.getChatSessions() {
+    PrivateChatSessionService.getPrivaeChatSessions() {
+        currentUserId = AuthClient.getCurrentUserId()
+        // 获取当前用户的所有单聊会话ID
+        participants = ParticipantRepository.ofAll(currentUserId, PrivateMember)
+        // 获取单聊聊天会话列表
+        privateChatSessions = PrivateChatSessionRepository.ofAll(QSet<QString>)
+    }
+    chatSessionViews = ChatSessionViewAssembler.assemble(const QList<QSharedPointer<ChatSession>>)
+}

@@ -1,0 +1,27 @@
+openapi: 3.0.0
+info:
+  title: 注册
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api
+
+# 定义认证方式
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 网关验证Token后会在Header中注入 X-User-Id
+
+  # 定义网关注入的 Header 参数（可复用）
+  parameters:
+    XUserId:
+      name: X-User-Id
+      in: header
+      required: true
+      schema:
+        type: integer
+        format: int64
+      description: 网关从Token解析后注入的用户ID（客户端无需传递）

@@ -1,0 +1,4 @@
+NotificationApplicatService.tryToConnect(){
+  ConnectionManager.tryToConnect()
+  ConnectionStatusChangedEventPublisher.publish(ConnectionStatusChanged)
+}

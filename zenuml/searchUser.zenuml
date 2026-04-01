@@ -1,0 +1,8 @@
+UserApplicationService.searchUser(SearchUserRequest){
+  UserService.searchUser(QString account){
+    User.checkAccount()
+    User = BackendClient.searchUser(account)
+    UserRepository.save(User)
+  }
+
+}

@@ -1,0 +1,150 @@
+//
+// Created by 86150 on 2026/3/31.
+//
+
+#pragma once
+
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QListView>
+#include "MessageListModel.h"
+#include "MessageDelegate.h"
+#include "sys/message-context/application/include/MessageApplicationService.h"
+
+namespace ui::message_widgets
+{
+    class MessageListWidget : public QWidget
+    {
+        Q_OBJECT
+
+    public:
+        explicit MessageListWidget(QWidget* parent = nullptr)
+            : QWidget(parent)
+        {
+            // 创建布局
+            QVBoxLayout* layout = new QVBoxLayout(this);
+            layout->setContentsMargins(0, 0, 0, 0);
+
+            // 创建列表视图
+            m_listView = new QListView(this);
+            m_listView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+            m_listView->setSelectionBehavior(QAbstractItemView::SelectRows);
+            m_listView->setMouseTracking(true);
+            m_listView->setStyleSheet(R"(
+            QListView {
+                background-color: #F5F5F5;
+                border: none;
+                outline: none;
+            }
+            QListView::item {
+                padding: 0px;
+            }
+        )");
+
+            // 创建模型和委托
+            m_model = new MessageListModel(this);
+            m_delegate = new MessageDelegate(this);
+
+            m_listView->setModel(m_model);
+            m_listView->setItemDelegate(m_delegate);
+
+            layout->addWidget(m_listView);
+
+            // 连接点击信号
+            connect(m_listView, &QListView::clicked, this, &MessageListWidget::onItemClicked);
+
+            // 异步加载消息
+            QtConcurrent::run([this]()-> QList<contract::message::MessageView>
+            {
+                return m_messageApplicationService->getMessagesBefore(m_chatSessionId, 20, std::nullopt);
+            }).then(this, [this](const QList<contract::message::MessageView>& views)
+            {
+                addMessages(views);
+            });
+        }
+
+        // 添加消息
+        void addMessages(const QList<contract::message::MessageView>& msgs)
+        {
+            m_model->addMessages(msgs);
+        }
+
+        // 获取模型指针（用于异步加载）
+        MessageListModel* model() const
+        {
+            return m_model;
+        }
+
+        // 滚动到底部
+        void scrollToBottom()
+        {
+            if (m_model->rowCount() > 0)
+            {
+                m_listView->scrollTo(m_model->index(m_model->rowCount() - 1));
+            }
+        }
+
+        // 滚动到指定消息
+        void scrollToMessage(const QString& msgId)
+        {
+            for (int i = 0; i < m_model->rowCount(); ++i)
+            {
+                auto msg = m_model->getMessage(i);
+                if (msg.msgId == msgId)
+                {
+                    m_listView->scrollTo(m_model->index(i));
+                    break;
+                }
+            }
+        }
+
+    signals:
+        // 图片点击信号
+        void imageClicked(int msgId, const QString& fileId);
+
+        // 文件下载信号
+        void fileDownloadRequested(int msgId, const QString& fileId, const QString& fileName);
+
+        // 文件打开信号（已下载的文件）
+        void fileOpenRequested(int msgId, const QString& localPath);
+
+        // 语音播放信号
+        void audioPlayRequested(int msgId, const QString& fileId);
+
+    private slots:
+        void onItemClicked(const QModelIndex& index)
+        {
+            if (!index.isValid())
+                return;
+
+            auto msg = m_model->getMessage(index.row());
+
+            switch (msg.messageType)
+            {
+            case contract::message::MessageView::MessageType::Image:
+                {
+                    // todo @liuyi
+                    break;
+                }
+            case contract::message::MessageView::MessageType::File:
+                {
+                    // todo @liuyi
+                    break;
+                }
+            case contract::message::MessageView::MessageType::Audio:
+                {
+                    // todo @liuyi
+                }
+            default:
+                break;
+            }
+        }
+
+    private:
+        QListView* m_listView;
+        MessageListModel* m_model;
+        MessageDelegate* m_delegate;
+        sys::message::application::MessageApplicationService* m_messageApplicationService;
+        QString m_chatSessionId;
+    };
+}

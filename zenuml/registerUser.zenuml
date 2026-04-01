@@ -1,0 +1,17 @@
+UserApplicationService.registerUser(RegisterUserRequest){
+  UserService.registerUser(nickname, phone, avatar, password){
+    UserValidator.validate(nickname, phone, password){
+        Nickname.checkNickname()
+        Phone.checkPhone()
+        isValid, hashedPassword = AuthClient.validateAndHashPassowrd(password)
+    }
+    
+    userId, avatarFileId = BackendClient.registerUser(user, hashedPassword)
+    user = User.of(userId, nickname, phone, avatar, avatarFileId)
+
+    FileClient.uploadAvatar(User)
+    UserRepository.save(User)
+    
+  }
+
+}

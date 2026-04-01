@@ -1,0 +1,32 @@
+RelationApplicationService.acceptFriendApplication(AcceptFriendApplicationRequest){
+    FriendApplicationService.acceptFriendApplication(friendApplicationId){
+        // 检查好友申请是否存在
+        friendApplication = FriendApplicationRepository.of(friendApplicationId)
+        // 检查好友申请是否已经被处理
+        FriendApplicationValidator.validateIsProcessed(friendApplication)
+        
+        friendShipId, privateChatSessionId = BackendClient.acceptFriendApplication(friendApplicationId)
+        friendApplication.accept()
+        FriendApplicationRepository.save(friendApplication)
+        FriendApplicationService.publish(FriendApplicationAccepted) {
+            FriendShipService.handle(FriendApplicationAccepted) {
+              currentUserId = AuthClient.getCurrentUserId()
+              friendShip = FriendShip.of(friendShipId, currentUserId, targetUserId)
+              FriendShipRepository.save(friendShip)
+              FriendShipService.publish(FriendShipCreated) {
+                  PrivateChatSessionService.handle(FriendShipCreated) {
+                      privateChatSession = PrivateChatSession.of(privateChatSessionId, friendShipId)
+                      PrivateChatSessionRepository.save(privateChatSession)
+                      PrivateChatSessionService.publish(PrivateChatSessionCreated) {
+                          ParticipantService.handle(PrivateChatSessionCreated) {
+                              participant1 = Participant.of(participantId, privateChatSessionId, currentUserId,ParticipantRole)
+                              participant2 = Participant.of(participantId, privateChatSessionId, targetUserId, ParticipantRole)
+                              ParticipantRepository.saveAll(participant1, participant2)
+                          }             
+                      }
+                  } 
+              }
+          } 
+      }
+  }
+}

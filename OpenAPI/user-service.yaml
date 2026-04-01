@@ -1,0 +1,141 @@
+openapi: 3.0.0
+info:
+  title: 用户微服务提供的API接口文档
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api
+
+# 定义认证方式
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 网关验证Token后会在Header中注入 X-User-Id
+
+  # 定义网关注入的 Header 参数（可复用）
+  parameters:
+    XUserId:
+      name: X-User-Id
+      in: header
+      required: true
+      schema:
+        type: integer
+        format: int64
+      description: 网关从Token解析后注入的用户ID（客户端无需传递）
+
+paths:
+  # ==================== 注册用户 ====================
+  /users:
+    post:
+      operationId: registerUser
+      description: 创建用户，成功后返回用户ID
+      # 注册时不需要认证，客户端无需传递token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nickname
+                - avatar
+                - phone
+                - password
+              properties:
+                nickname:
+                  type: string
+                avatar:
+                  type: string
+                phone:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+                    description: 注册成功为true, 失败为false
+                  data:
+                    type: object
+                    properties:
+                      userId:
+                        type: integer
+                  errCode:
+                    type: string
+                    description: 错误码
+                    enum:
+                      - "NICKNAME_INVALID"
+                      - "PHONE_REGISTERED"
+                      - "UNKNOWN_ERROR"
+                  errMsg:
+                    type: string
+                    description: 错误信息
+
+    # ==================== 获取用户详情 ====================
+    get:
+      operationId: searchUser
+      description: 搜索用户，支持用户ID或手机号查询(需要认证)
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: keyword
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 搜索关键词（用户ID或手机号）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+                    description: 找到了为true, 没有找到为false
+                  data:
+                    type: object
+                    required:
+                      - userId
+                      - nickname
+                      - avatarFileId
+                      - phone
+                      - description
+                    properties:
+                      userId:
+                        type: string
+                      nickname:
+                        type: string
+                      avatarFileId:
+                        type: string
+                      phone:
+                        type: string
+                      description: #个性签名
+                        type: string
+                  errCode:
+                    type: string
+                    description: 错误码
+                    enum:
+                      - "KEYWORD_INVALID"
+                      - "USER_NOT_FOUND"
+                      - "UNKNOWN_ERROR"
+                  errMsg:
+                    type: string
+                    description: 错误信息
+
+

@@ -1,0 +1,9 @@
+RelationApplicationService.getFriendApplications(){
+    FriendApplicationService.getFriendApplications() {
+        currentUserId = AuthClient.getCurrentUserId()
+        applications1 =  FriendApplication.ofApplicantUserId(currentUserId)
+        applications2 = FriendApplication.ofTargetUserId(currentUserId)
+        applications = FriendApplication.composeAndSortByApplyTimeDesc(applications1, applications2)
+    }
+    FriendApplicationViewAssembler.toFriendApplicationViews(applications)
+}

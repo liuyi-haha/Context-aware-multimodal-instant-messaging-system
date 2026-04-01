@@ -1,0 +1,17 @@
+RelationApplicationService.sendFriendApplication(SendFriendApplicationRequest){
+    friendApplicationId = FriendApplicationService.sendFriendApplication(targetUserId, verificationMessage, recipientRemark) {
+        currentUserId = AuthClient.getCurrentUserId()
+        FriendApplicationValidator.validateSendFriendApplicationInputs(verificationMessage, recipientRemark, currentUserId, targetUserId) {
+            VerificationMessage.checkVerificationMessage(verificationMessage)
+            RecipientRemark.checkRecipientRemark(recipientRemark)
+            // 检查是否存在未处理的好友申请
+            FriendApplicationRepository.of(currentUserId, targetUserId, ApplicationStatus.Pending)
+            // 检查是否已经是好友
+            FriendShipRepository.of(currentUserId, targetUserId)
+        }
+
+        backendResult = BackendClient.sendFriendApplication(targetUserId, verificationMessage, recipientRemark)
+        friendApplication = FriendApplication.of(currentUserId, backendResult.friendApplicationId, targetUserId, verificationMessage, recipientRemark, backendResult.applyTime)
+        FriendApplicationRepository.save(friendApplication)
+    }
+}

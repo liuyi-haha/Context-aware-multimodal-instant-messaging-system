@@ -1,0 +1,15 @@
+RelationApplicationService.rejectFriendApplication(RejectFriendApplicationRequest){
+    FriendApplicationService.rejectFriendApplication(friendApplicationId) {
+        currentUserId = AuthClient.getCurrentUserId()
+        FriendApplicationValidator.validateHandleFriendApplicationInputs(friendApplicationId, currentUserId) {
+            // 检查好友申请是否存在且未处理
+            friendApplication = FriendApplicationRepository.of(friendApplicationId, ApplicationStatus.Pending)
+            // 检查当前用户是否是好友申请的目标用户
+
+        }
+        BackendClient.rejectFriendApplication(friendApplicationId)
+        FriendApplication.reject()
+
+        FriendApplicationRepository.save(friendApplication)
+    }
+}

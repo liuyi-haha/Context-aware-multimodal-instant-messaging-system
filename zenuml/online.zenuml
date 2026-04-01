@@ -1,0 +1,6 @@
+BackendEventSubscriber.subscribe("QWebSocket::connected"){
+  BackendEventHandler.handleConnectedEvent(){
+    ConnectionManager.setConnectionStatus(ConnectionStatus)
+    ConnectionStatusChangedEventPubliser.publish(ConnectionStatusChanged)
+  }
+}

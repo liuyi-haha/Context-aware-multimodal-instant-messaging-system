@@ -1,0 +1,257 @@
+openapi: 3.0.0
+info:
+  title: 聊天微服务提供的API接口文档
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api
+
+# 定义认证方式
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 网关验证Token后会在Header中注入 X-User-Id
+
+  # 定义网关注入的 Header 参数（可复用）
+  parameters:
+    XUserId:
+      name: X-User-Id
+      in: header
+      required: true
+      schema:
+        type: string
+      description: 网关从Token解析后注入的用户ID（客户端无需传递）
+
+paths:
+  # ==================== 发送好友申请 ====================
+  /friend/applications:
+    post:
+      operationId: sendFriendApplication
+      description: 发送好友申请（需要认证）
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - targetUserId
+                - verificationMessage
+                - recipientRemark
+              properties:
+                targetUserId:
+                  type: string
+                  description: 目标用户ID
+                verificationMessage:
+                  type: string
+                  description: 验证消息
+                recipientRemark:
+                  type: string
+                  description: 给对方的备注名
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+                    description: 是否成功
+                  data:
+                    type: object
+                    properties:
+                      friendApplicationId:
+                        type: string
+                        description: 好友申请ID
+                  errCode:
+                    type: string
+                    description: 错误码
+                    enum:
+                      - "USER_NOT_FOUND"
+                      - "DUPLICATE_APPLICATION"
+                      - "ALREADY_FRIEND"
+                      - "SELF_FRIEND"
+                      - "UNKNOWN_ERROR"
+                  errMsg:
+                    type: string
+                    description: 错误信息
+
+  # ==================== 同意好友申请 ====================
+  /friend/applications/{friendApplicationId}/accept:
+    post:
+      operationId: acceptFriendApplication
+      description: 同意好友申请（需要认证）
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: friendApplicationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 好友申请ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - recipientRemark
+              properties:
+                recipientRemark:
+                  type: string
+                  description: 给对方设置的备注名
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+                    description: 是否成功
+                  data:
+                    type: object
+                    required:
+                      - createFriendShip
+                    properties:
+                      createFriendShip:
+                        type: boolean
+                        description: 是否新建了好友关系（如果之前已经是好友了，则为false）
+                      friendshipId:
+                        type: string
+                        description: 好友关系ID
+                      privateChatSessionId:
+                        type: string
+                        description: 私聊会话ID
+                      applicantParticipantId:
+                        type: string
+                        description: 申请用户的成员ID
+                      targetUserParticipantId:
+                        type: string
+                        description: 目标用户的成员ID
+                  errCode:
+                    type: string
+                    description: 错误码
+                    enum:
+                      - "APPLICATION_NOT_FOUND"
+                      - "APPLICATION_ALREADY_HANDLED"
+                      - "UNKNOWN_ERROR"
+                  errMsg:
+                    type: string
+                    description: 错误信息
+
+  # ==================== 拒绝好友申请 ====================
+  /friend/applications/{friendApplicationId}/reject:
+    post:
+      operationId: rejectFriendApplication
+      description: 拒绝好友申请（需要认证）
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: friendApplicationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 好友申请ID
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+                    description: 是否成功
+                  errCode:
+                    type: string
+                    description: 错误码
+                    enum:
+                      - "APPLICATION_NOT_FOUND"
+                      - "APPLICATION_ALREADY_HANDLED"
+                      - "UNKNOWN_ERROR"
+                  errMsg:
+                    type: string
+                    description: 错误信息
+
+  # ==================== 发送文本消息 ====================
+  /chat/sessions/{sessionId}/messages:
+    post:
+      operationId: sendTextMessage
+      description: 发送文本消息（需要认证）
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 聊天会话ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  description: 文本消息内容
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+                    description: 是否成功
+                  data:
+                    type: object
+                    properties:
+                      messageId:
+                        type: string
+                        description: 消息ID
+                      sequence:
+                        type: integer
+                        format: int64
+                        description: 消息在聊天会话中的次序
+                  errCode:
+                    type: string
+                    description: 错误码
+                    enum:
+                      - "SESSION_NOT_FOUND"
+                      - "FRIENDSHIP_REQUIRED" # 好友解除后，私聊会话不删除；但是如果要私聊，则必须是好友关系
+                      - "NOT_PARTICIPANT"
+                      - "CONTENT_EMPTY"
+                      - "CONTENT_TOO_LONG"
+                      - "UNKNOWN_ERROR"
+                  errMsg:
+                    type: string
+                    description: 错误信息

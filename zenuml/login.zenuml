@@ -1,0 +1,8 @@
+AuthApplicationService.login(LoginRequest){
+  UserCredentialService.getCredential(QString account, QString password) {
+    Password.of(password)
+    hashedPassword = Password.hashKey()
+    userId, token = BackendClient.login(account, hashedPassword)
+    UserCredentialManager.update(userId, token)
+  }
+}

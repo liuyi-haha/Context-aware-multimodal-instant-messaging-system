@@ -1,0 +1,14 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>icons/settings.png</file>
+        <file>icons/message/message_nav.png</file>
+        <file>icons/notification/connected.png</file>
+        <file>icons/notification/disconnected.png</file>
+        <file>icons/relation/friend_application_nav.png</file>
+        <file>icons/relation/friend_nav.png</file>
+        <file>icons/relation/group_nav.png</file>
+        <file>icons/user/search.png</file>
+        <file>icons/smart/chat_robot.png</file>
+    </qresource>
+</RCC>
