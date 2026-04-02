@@ -5,14 +5,14 @@
 #pragma once
 #include <gmock/gmock.h>
 
-#include "sys/message-context/port/client/include/RelationClient.h"
+#include "sys/message-context/port/client/RelationClient.h"
 
 namespace tests::message::mock
 {
     class RelationClientMock : public sys::message::port::RelationClient
     {
     public:
-        MOCK_METHOD(void, checkSenderHasPermissionToSendMessage, (), (override)
+        MOCK_METHOD(void, checkSenderHasPermissionToSendMessage, (const QString& chatSessionId), (override)
         );
     };
 }

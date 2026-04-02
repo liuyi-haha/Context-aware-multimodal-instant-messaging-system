@@ -73,9 +73,11 @@ TEST_F(MessageTest, 当文本文本内容合法时_调用ContentFactory的create
 TEST_F(MessageTest, 当消息文本内容合法时_调用Message的ofTextMessage方法_应该成功创建文本消息对象)
 {
     QDateTime sendTime = QDateTime::currentDateTime();
-    auto message = sys::message::domain::Message::ofTextMessage("message_id", 10, sendTime, "123456789", "hello");
+    auto message = sys::message::domain::Message::ofTextMessage("message_id", "chat_session_id", 10, sendTime,
+                                                                "123456789", "hello");
     // 验证值
     EXPECT_EQ(message->messageIdValue(), "message_id");
+    EXPECT_EQ(message->chatSessionIdValue(), "chat_session_id");
     EXPECT_EQ(message->seqInChatSessionValue(), 10);
     EXPECT_EQ(message->sendTimeValue(), sendTime);
     EXPECT_EQ(message->senderUserIdValue(), "123456789");
@@ -93,7 +95,8 @@ TEST_F(MessageTest, 当消息文本内容不合法时_调用Message的ofTextMess
     tests::utils::expectThrowWithMessage<sys::message::domain::InvalidTextException>(
         [&]
         {
-            sys::message::domain::Message::ofTextMessage("message_id", 10, QDateTime::currentDateTime(), "123456789",
+            sys::message::domain::Message::ofTextMessage("message_id", "chat_session_id", 10,
+                                                         QDateTime::currentDateTime(), "123456789",
                                                          tooLongText);
         },
         "消息文本长度不合法");

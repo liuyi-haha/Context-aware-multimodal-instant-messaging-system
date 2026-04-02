@@ -46,6 +46,8 @@ namespace sys::relation::application
         // 获取所有聊天会话: 暂时只获取单聊会话，群聊会话后续再扩展
         QList<contract::relation::ChatSessionView> getChatSessions();
 
+        void checkSenderHasPermissionToSendMessage(const QString& chatSessionId); //有问题直接抛异常，没有问题则正常返回
+
         enum class NoPermissionReason
         {
             ChatSessionNotFound,

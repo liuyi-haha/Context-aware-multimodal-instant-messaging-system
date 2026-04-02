@@ -127,6 +127,12 @@ namespace sys::relation::application
         }
     }
 
+    void RelationApplicationService::checkSenderHasPermissionToSendMessage(const QString& chatSessionId)
+    {
+        // todo @liuyi
+        privateChatSessionService->checkCurrentUserHasPermissionToSendMessage(chatSessionId);
+    }
+
     RelationApplicationService::CheckSendMessagePermissionResponse RelationApplicationService::
     checkSendMessagePermission()
     {

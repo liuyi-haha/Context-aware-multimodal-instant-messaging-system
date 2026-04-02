@@ -234,6 +234,10 @@ paths:
                     description: 是否成功
                   data:
                     type: object
+                    required:
+                      - messageId
+                      - sequence
+                      - sendTime
                     properties:
                       messageId:
                         type: string
@@ -242,6 +246,9 @@ paths:
                         type: integer
                         format: int64
                         description: 消息在聊天会话中的次序
+                      sendTime:
+                        type: string
+                        format: date-time    # ISO 8601: 2024-01-15T10:30:00Z
                   errCode:
                     type: string
                     description: 错误码

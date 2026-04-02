@@ -5,14 +5,14 @@
 #pragma once
 #include "OAIChatSendTextMessage_200_response.h"
 #include "OAIChatSendTextMessage_request.h"
-#include "sys/message-context/port/client/include/BackendClient.h"
+#include "sys/message-context/port/client/BackendClient.h"
 
 namespace sys::message::adapter
 {
     class BackendClientAdapter : public port::BackendClient
     {
     public:
-        void sendTextMessage(const QString& chatSessionId, const QString& text) override;
+        SendTextMessageResult sendTextMessage(const QString& chatSessionId, const QString& text) override;
     };
 
     class IChatApiGateway

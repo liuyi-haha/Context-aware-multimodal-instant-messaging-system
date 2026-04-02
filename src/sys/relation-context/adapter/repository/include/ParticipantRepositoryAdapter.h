@@ -19,5 +19,7 @@ namespace sys::relation::adapter
 
     private:
         common::component::IPrivateDatabase* privateDatabase = nullptr;
+
+    private:
     };
 }

@@ -201,14 +201,15 @@ set(IMS_SHARED_EXECUTABLE_SOURCES
         sys/message-context/domain/service/include/MessageService.h
         sys/message-context/domain/service/cpp/SenderValidator.cpp
         sys/message-context/domain/service/include/SenderValidator.h
-        sys/message-context/port/client/cpp/RelationClient.cpp
-        sys/message-context/port/client/include/RelationClient.h
-        sys/message-context/port/client/cpp/BackendClient.cpp
-        sys/message-context/port/client/include/BackendClient.h
+        sys/message-context/port/client/RelationClient.h
+        sys/message-context/port/client/BackendClient.h
         sys/message-context/adapter/client/cpp/BackendClientAdapter.cpp
         sys/message-context/adapter/client/include/BackendClientAdapter.h
         sys/message-context/adapter/client/cpp/RelationClientAdapter.cpp
         sys/message-context/adapter/client/include/RelationClientAdapter.h
+        sys/message-context/port/repository/MessageRepository.h
+        sys/message-context/adapter/repository/cpp/MessageRepositoryAdapter.cpp
+        sys/message-context/adapter/repository/include/MessageRepositoryAdapter.h
 )
 
 set(IMS_SHARED_LINK_LIBS
@@ -330,6 +331,7 @@ add_executable(run_tests
         ../tests/file-context/application/FileApplicationServiceTest.cpp
         ../tests/message-context/domain/object/MessageTest.cpp
         ../tests/message-context/domain/service/MessageServiceTest.cpp
+        ../tests/message-context/mock/MessageRepositoryMock.h
 )
 
 

@@ -122,13 +122,14 @@ namespace sys::message::domain
     {
     private:
         QString messageId;
+        QString chatSessionId;
         int seqInChatSession;
         SendingInfo sendingInfo;
         QSharedPointer<Content> content; // 这里设置为指针是为了支持多态
     public:
-        static QSharedPointer<Message> ofTextMessage(const QString& messageId, int seqInChatSession,
-                                                     const QDateTime& sendTime, const QString& senderUserId,
-                                                     const QString& text);
+        static QSharedPointer<Message> ofTextMessage(const QString& messageId, const QString& chatSessionId,
+                                                     int seqInChatSession, const QDateTime& sendTime,
+                                                     const QString& senderUserId, const QString& text);
         // static QSharedPointer<Message> ofPhotoMessage();
         // static QSharedPointer<Message> ofDocumentMessage();
         // static QSharedPointer<Message> ofSpeechMessage();
@@ -138,9 +139,11 @@ namespace sys::message::domain
         QDateTime sendTimeValue();
         QString senderUserIdValue();
         QSharedPointer<Content> contentValue();
+        QString chatSessionIdValue();
 
     private:
-        Message(const QString& messageId, int seqInChatSession, const SendingInfo& sendingInfo,
+        Message(const QString& messageId, const QString& chatSessionId, int seqInChatSession,
+                const SendingInfo& sendingInfo,
                 const QSharedPointer<Content>& content);
     };
 }

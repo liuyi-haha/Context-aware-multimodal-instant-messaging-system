@@ -4,15 +4,25 @@
 
 #include "../include/MessageService.h"
 
-namespace sys
+#include "sys/common/component/UserCredentialManager.h"
+#include "sys/message-context/domain/exception/InvalidTextException.h"
+#include "sys/message-context/domain/object/include/Message.h"
+
+namespace sys::message::domain
 {
-    namespace message
+    void MessageService::sendTextMessage(const QString& chatSessionId, const QString& text)
     {
-        namespace domain
+        if (!TextContent::checkText(text))
         {
-            void MessageService::sendTextMessage(const QString& chatSessionId, const QString& text)
-            {
-            }
-        } // domain
-    } // message
-} // sys
+            throw InvalidTextException();
+        }
+        senderValidator->checkSenderHasPermissionToSendMessage(chatSessionId);
+
+        const auto result = backendClient->sendTextMessage(chatSessionId, text);
+        const QString currentUserId = common::component::UserCredentialManager::instance().getCurrentUserId();
+        const auto message = Message::ofTextMessage(result.messageId, chatSessionId,
+                                                    result.seqInChatSession, result.sendTime,
+                                                    currentUserId, text);
+        messageRepository->save(message);
+    }
+}

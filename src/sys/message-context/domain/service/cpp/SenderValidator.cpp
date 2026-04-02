@@ -4,13 +4,11 @@
 
 #include "../include/SenderValidator.h"
 
-namespace sys
+namespace sys::message::domain
 {
-    namespace message::domain
+    void SenderValidator::checkSenderHasPermissionToSendMessage(const QString& chatSessionId)
     {
-        void SenderValidator::checkSenderHasPermissionToSendMessage()
-        {
-            // 如果没有权限则抛异常
-        }
+        relationClient->checkSenderHasPermissionToSendMessage(chatSessionId);
+        // 如果没有权限则抛异常
     }
-} // sys
+}

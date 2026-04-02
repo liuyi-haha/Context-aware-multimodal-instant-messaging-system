@@ -1,6 +1,7 @@
 #include "gmock/gmock-nice-strict.h"
 #include "gtest/gtest.h"
 #include "message-context/mock/BackendClientMock.h"
+#include "message-context/mock/MessageRepositoryMock.h"
 #include "message-context/mock/RelationClientMock.h"
 #include "sys/message-context/domain/exception/FriendShipNotFoundException.h"
 #include "sys/message-context/domain/exception/InvalidTextException.h"
@@ -18,12 +19,13 @@ protected:
         // 准备Mock端口
         mockBackendClient = std::make_unique<testing::StrictMock<tests::message::mock::BackendClientMock>>();
         mockRelationClient = std::make_unique<testing::StrictMock<tests::message::mock::RelationClientMock>>();
+        mockMessageRepository = std::make_unique<testing::StrictMock<tests::message::mock::MessageRepositoryMock>>();
 
         senderValidator = std::make_unique<sys::message::domain::SenderValidator>(
             mockRelationClient.get()
         );
         messageService = std::make_unique<sys::message::domain::MessageService>(
-            mockBackendClient.get()
+            mockBackendClient.get(), senderValidator.get(), mockMessageRepository.get()
         );
     }
 
@@ -34,6 +36,7 @@ protected:
 protected:
     std::unique_ptr<testing::StrictMock<tests::message::mock::BackendClientMock>> mockBackendClient;
     std::unique_ptr<testing::StrictMock<tests::message::mock::RelationClientMock>> mockRelationClient;
+    std::unique_ptr<testing::StrictMock<tests::message::mock::MessageRepositoryMock>> mockMessageRepository;
     std::unique_ptr<sys::message::domain::MessageService> messageService;
     std::unique_ptr<sys::message::domain::SenderValidator> senderValidator;;
 };
@@ -62,7 +65,7 @@ TEST_F(MessageServiceTest, 如果文本长度不合法_调用sendTextMessage时_
 
 TEST_F(MessageServiceTest, 如果往单聊会话发送消息但已经不是好友了_调用sendTextMessage时_应该抛出异常)
 {
-    EXPECT_CALL(*mockRelationClient, checkSenderHasPermissionToSendMessage())
+    EXPECT_CALL(*mockRelationClient, checkSenderHasPermissionToSendMessage(testing::_))
         .WillOnce(testing::Throw(sys::message::domain::FriendShipNotFoundException()));
     EXPECT_CALL(*mockBackendClient, sendTextMessage(testing::_, testing::_)).Times(0);
 
@@ -84,8 +87,9 @@ TEST_F(MessageServiceTest, 如果文本合法且有权限发送_调用sendTextMe
 {
     {
         testing::InSequence seq;
-        EXPECT_CALL(*mockRelationClient, checkSenderHasPermissionToSendMessage());
+        EXPECT_CALL(*mockRelationClient, checkSenderHasPermissionToSendMessage(QString("single_chat_1")));
         EXPECT_CALL(*mockBackendClient, sendTextMessage);
+        EXPECT_CALL(*mockMessageRepository, save);
     }
 
     EXPECT_NO_THROW(messageService->sendTextMessage("single_chat_1", "hello"));

@@ -9,16 +9,21 @@
 #include "sys/relation-context/domain/object/include/PrivateChatSession.h"
 #include "sys/common/component/UserCredentialManager.h"
 #include "sys/common/exception/InfraExcception.h"
+#include "sys/message-context/domain/exception/ChatSessionNotFoundException.h"
+#include "sys/message-context/domain/exception/FriendShipNotFoundException.h"
+#include "sys/message-context/domain/exception/NotParticipantException.h"
 
 namespace sys::relation::domain
 {
     PrivateChatSessionService::PrivateChatSessionService(
         port::PrivateChatSessionRepository* privateChatSessionRepository,
         port::ParticipantRepository* participantRepository,
+        port::FriendShipRepository* friendshipRepository,
         QObject* parent)
         : QObject(parent),
           privateChatSessionRepository(privateChatSessionRepository),
-          participantRepository(participantRepository)
+          participantRepository(participantRepository),
+          friendShipRepository(friendshipRepository)
     {
     }
 
@@ -60,6 +65,28 @@ namespace sys::relation::domain
 
         // 获取所有单聊会话
         return privateChatSessionRepository->ofAll(sessionIds);
+    }
+
+    void PrivateChatSessionService::checkCurrentUserHasPermissionToSendMessage(const QString& chatSessionId)
+    {
+        QString currentUserId = common::component::UserCredentialManager::instance().getCurrentUserId();
+        auto privateChatSession = privateChatSessionRepository->of(chatSessionId);
+        if (privateChatSession == nullptr)
+        {
+            throw message::domain::ChatSessionNotFoundException();
+        }
+
+        // 检查当前用户是否是该单聊会话的参与者
+        if (participantRepository->of(chatSessionId, currentUserId) == nullptr)
+        {
+            throw message::domain::NotParticipantException();
+        }
+
+        // 检查好友关系是否被删除了
+        if (friendShipRepository->of(privateChatSession->friendShipId()) == nullptr)
+        {
+            throw message::domain::FriendShipNotFoundException();
+        }
     }
 
     void PrivateChatSessionService::checkConfig()

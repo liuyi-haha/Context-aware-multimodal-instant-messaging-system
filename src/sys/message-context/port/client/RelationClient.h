@@ -12,6 +12,6 @@ namespace sys::message::port
         Q_OBJECT
 
     public:
-        virtual void checkSenderHasPermissionToSendMessage() = 0; // 如果没有权限则抛异常
+        virtual void checkSenderHasPermissionToSendMessage(const QString& chatSessionId) = 0; // 如果没有权限则抛异常
     };
 }

@@ -38,13 +38,13 @@ namespace sys::message::domain
         }
     }
 
-    QSharedPointer<Message> Message::ofTextMessage(const QString& messageId, int seqInChatSession,
-                                                   const QDateTime& sendTime, const QString& senderUserId,
-                                                   const QString& text)
+    QSharedPointer<Message> Message::ofTextMessage(const QString& messageId, const QString& chatSessionId,
+                                                   int seqInChatSession, const QDateTime& sendTime,
+                                                   const QString& senderUserId, const QString& text)
     {
         const SendingInfo sendingInfo(sendTime, senderUserId);
         const auto content = ContentFactory::createTextContent(text);
-        return QSharedPointer<Message>(new Message(messageId, seqInChatSession, sendingInfo, content));
+        return QSharedPointer<Message>(new Message(messageId, chatSessionId, seqInChatSession, sendingInfo, content));
     }
 
     QString Message::messageIdValue()
@@ -72,10 +72,19 @@ namespace sys::message::domain
         return content;
     }
 
+    QString Message::chatSessionIdValue()
+    {
+        return chatSessionId;
+    }
 
-    Message::Message(const QString& messageId, int seqInChatSession, const SendingInfo& sendingInfo,
+
+    Message::Message(const QString& messageId,
+                     const QString& chatSessionId,
+                     int seqInChatSession,
+                     const SendingInfo& sendingInfo,
                      const QSharedPointer<Content>& content)
         : messageId(messageId),
+          chatSessionId(chatSessionId),
           seqInChatSession(seqInChatSession),
           sendingInfo(sendingInfo),
           content(content)
