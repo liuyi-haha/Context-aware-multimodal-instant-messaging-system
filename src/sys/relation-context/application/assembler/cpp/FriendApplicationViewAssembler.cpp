@@ -33,7 +33,7 @@ namespace
 namespace sys::relation::application
 {
     FriendApplicationViewAssembler::FriendApplicationViewAssembler(
-        port::UserClient* userClient)
+        common::port::UserClient* userClient)
         : userClient(userClient)
     {
     }
@@ -41,7 +41,7 @@ namespace sys::relation::application
     void FriendApplicationViewAssembler::fillAvatarFileIdAndName(
         QList<contract::relation::FriendApplicationView>& views, QSet<QString> userIds) const
     {
-        const QHash<QString, port::UserInfo> users = userClient->getUsers(userIds);
+        const QHash<QString, common::port::UserInfo> users = userClient->getUsers(userIds);
         for (auto& view : views)
         {
             const auto userIt = users.constFind(view.peerUserId);
@@ -87,8 +87,8 @@ namespace sys::relation::application
             view.applicationId = friendApplication->friendApplicationId();
 
             view.peerUserId = (isCurrentUserApplicant
-                               ? friendApplication->targetUserId()
-                               : friendApplication->applicantUserId());
+                                   ? friendApplication->targetUserId()
+                                   : friendApplication->applicantUserId());
             view.peerUserAvatarFileId = ""; // 后面会统一加载用户信息时设置
             view.peerUserAvatar = std::nullopt;
             view.name = isCurrentUserApplicant

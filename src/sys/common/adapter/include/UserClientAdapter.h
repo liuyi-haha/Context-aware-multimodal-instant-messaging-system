@@ -1,10 +1,10 @@
 #pragma once
 
 #include "dependencyinjector.h"
-#include "sys/relation-context/port/client/include/UserClient.h"
+#include "sys/common/port/UserClient.h"
 #include "sys/user-context/application/service/include/UserApplicationService.h"
 
-namespace sys::relation::adapter
+namespace sys::common::adapter
 {
     class UserClientAdapter final : public port::UserClient
     {

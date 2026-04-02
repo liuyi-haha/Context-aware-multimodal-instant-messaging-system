@@ -20,6 +20,7 @@ namespace sys::relation::port
             Image,
             Document,
             Speech,
+            NoMessage // 用于表示没有消息的情况
         };
 
         struct LastMessageInfo

@@ -5,7 +5,7 @@
 
 #include "sys/common/component/Database.h"
 
-namespace tests::relation::fake
+namespace tests::common::fake
 {
     class PrivateDataBaseFake : public sys::common::component::IPrivateDatabase
     {

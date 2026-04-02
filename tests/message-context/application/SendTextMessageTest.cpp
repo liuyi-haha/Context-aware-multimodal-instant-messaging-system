@@ -3,6 +3,9 @@
 // Created by 86150 on 2026/4/1.
 //
 
+// rule:
+// 文本消息长度[1, 1000]
+// 好友关系解除后，单聊会话和成员不删除，但不能发送消息了
 TEST_F(MessageApplicationServiceTestFixture, 发送文本消息时_如果文本内容不合法_应该给出提示)
 {
     QString tooLongText(1001, 'a'); // 1001个字符的文本

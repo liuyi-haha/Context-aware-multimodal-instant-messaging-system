@@ -7,7 +7,7 @@
 
 #include "sys/relation-context/adapter/client/include/BackendClientAdapter.h"
 
-namespace tests::relation::fake
+namespace tests::common::fake
 {
     class ChatApiGatewayFake : public sys::relation::adapter::IChatApiGateway
     {

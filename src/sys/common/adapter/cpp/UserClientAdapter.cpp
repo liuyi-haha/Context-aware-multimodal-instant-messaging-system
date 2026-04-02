@@ -2,7 +2,7 @@
 
 #include <QSet>
 
-namespace sys::relation::adapter
+namespace sys::common::adapter
 {
     UserClientAdapter::UserClientAdapter(
         sys::user::application::UserApplicationService* userApplicationService)

@@ -71,6 +71,7 @@ namespace sys::relation::domain
     {
         QString currentUserId = common::component::UserCredentialManager::instance().getCurrentUserId();
         auto privateChatSession = privateChatSessionRepository->of(chatSessionId);
+        // 检查单聊会话是否存在
         if (privateChatSession == nullptr)
         {
             throw message::domain::ChatSessionNotFoundException();

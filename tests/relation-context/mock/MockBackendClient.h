@@ -4,7 +4,7 @@
 
 #include "sys/relation-context/port/client/include/BackendClient.h"
 
-namespace tests::relation::mock
+namespace tests::common::mock
 {
     class MockBackendClient : public sys::relation::port::BackendClient
     {

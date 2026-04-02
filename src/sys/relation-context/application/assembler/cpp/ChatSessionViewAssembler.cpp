@@ -101,6 +101,8 @@ namespace
             return "[文件]";
         case sys::relation::port::MessageClient::MessageType::Speech:
             return "[语音]";
+        case sys::relation::port::MessageClient::MessageType::NoMessage:
+            return "";
         }
 
         return {};

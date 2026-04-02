@@ -4,7 +4,7 @@
 
 #include "sys/relation-context/port/repository/include/PrivateChatSessionRepository.h"
 
-namespace tests::relation::mock
+namespace tests::common::mock
 {
     class MockPrivateChatSessionRepository : public sys::relation::port::PrivateChatSessionRepository
     {

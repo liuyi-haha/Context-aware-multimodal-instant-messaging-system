@@ -4,7 +4,7 @@
 
 #include "sys/relation-context/port/repository/include/ParticipantRepository.h"
 
-namespace tests::relation::mock
+namespace tests::common::mock
 {
     class MockParticipantRepository : public sys::relation::port::ParticipantRepository
     {

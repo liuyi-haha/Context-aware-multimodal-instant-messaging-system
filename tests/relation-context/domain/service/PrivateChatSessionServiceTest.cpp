@@ -25,8 +25,8 @@ protected:
     }
 
 protected:
-    testing::StrictMock<tests::relation::mock::MockPrivateChatSessionRepository> mockPrivateChatSessionRepository;
-    testing::StrictMock<tests::relation::mock::MockParticipantRepository> mockParticipantRepository;
+    testing::StrictMock<tests::common::mock::MockPrivateChatSessionRepository> mockPrivateChatSessionRepository;
+    testing::StrictMock<tests::common::mock::MockParticipantRepository> mockParticipantRepository;
 };
 
 //----------------------------- getPrivateChatSessions -----------------------------

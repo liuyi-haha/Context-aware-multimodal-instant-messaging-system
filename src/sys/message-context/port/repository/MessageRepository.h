@@ -16,6 +16,9 @@ namespace sys::message::port
 
     public:
         virtual void save(const QSharedPointer<domain::Message>) = 0;
+        virtual void saveAll(const QList<QSharedPointer<domain::Message>>&) = 0;
         virtual QSharedPointer<domain::Message> of(const QString& messageId) = 0;
+        // Returns messages ordered by seq ascending while taking the latest `count` messages.
+        virtual QList<QSharedPointer<domain::Message>> ofRecentMessages(const QString& chatSessionId, int count) = 0;
     };
 }

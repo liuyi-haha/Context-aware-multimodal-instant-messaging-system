@@ -4,7 +4,7 @@
 
 #include "sys/relation-context/adapter/client/include/BackendClientAdapter.h"
 #include "sys/relation-context/adapter/client/include/NotificationClientAdapter.h"
-#include "sys/relation-context/adapter/client/include/UserClientAdapter.h"
+#include "sys/common/adapter/include/UserClientAdapter.h"
 #include "sys/relation-context/adapter/client/include/MessageClientAdapter.h"
 #include "sys/relation-context/adapter/repository/include/FriendApplicationRepositoryAdapter.h"
 #include "sys/relation-context/adapter/repository/include/FriendRelationRepositoryAdapter.h"
@@ -23,7 +23,7 @@ namespace sys::relation::starter
     void RelationContextStarter::bootstrap()
     {
         QInjection::addSingleton(new adapter::BackendClientAdapter);
-        QInjection::addSingleton(new adapter::UserClientAdapter);
+        QInjection::addSingleton(new common::adapter::UserClientAdapter);
         QInjection::addSingleton(new adapter::NotificationClientAdapter);
         QInjection::addSingleton(new adapter::MessageClientAdapter);
 

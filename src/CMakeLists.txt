@@ -83,9 +83,9 @@ set(IMS_SHARED_EXECUTABLE_SOURCES
         sys/notification-context/starter/include/NotificationContextStarter.h
 
         sys/relation-context/adapter/client/cpp/BackendClientAdapter.cpp
-        sys/relation-context/adapter/client/cpp/UserClientAdapter.cpp
+        sys/common/adapter/cpp/UserClientAdapter.cpp
+        sys/common/port/UserClient.h
         sys/relation-context/adapter/client/include/BackendClientAdapter.h
-        sys/relation-context/adapter/client/include/UserClientAdapter.h
         sys/relation-context/adapter/repository/cpp/FriendApplicationRepositoryAdapter.cpp
         sys/relation-context/adapter/repository/cpp/FriendRelationRepositoryAdapter.cpp
         sys/relation-context/adapter/repository/cpp/ParticipantRepositoryAdapter.cpp
@@ -125,9 +125,7 @@ set(IMS_SHARED_EXECUTABLE_SOURCES
         sys/relation-context/domain/service/include/ParticipantService.h
         sys/relation-context/domain/service/include/PrivateChatSessionService.h
         sys/relation-context/port/client/cpp/BackendClient.cpp
-        sys/relation-context/port/client/cpp/UserClient.cpp
         sys/relation-context/port/client/include/BackendClient.h
-        sys/relation-context/port/client/include/UserClient.h
         sys/relation-context/port/repository/include/FriendApplicationRepository.h
         sys/relation-context/port/repository/include/FriendShipRepository.h
         sys/relation-context/port/repository/include/ParticipantRepository.h
@@ -335,6 +333,10 @@ add_executable(run_tests
         ../tests/message-context/domain/service/MessageServiceTest.cpp
         ../tests/message-context/mock/MessageRepositoryMock.h
         contract/system-provider/message-context-provider/SendTextMessage.h
+        ../tests/message-context/application/GetRecentMessagesTest.cpp
+        ../tests/message-context/application/GetMessagesBeforeTest.cpp
+        ../tests/message-context/application/GetChatSessionLastMessageInfosTest.cpp
+        ../tests/relation-context/application/service/CheckSenderHasPermissionToSendMessageTest.cpp
 )
 
 

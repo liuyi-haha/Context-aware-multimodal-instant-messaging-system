@@ -68,9 +68,9 @@ protected:
     }
 
 protected:
-    testing::StrictMock<tests::relation::mock::MockBackendClient> backendClient;
-    testing::StrictMock<tests::relation::mock::MockFriendApplicationRepository> friendApplicationRepository;
-    testing::StrictMock<tests::relation::mock::MockFriendShipRepository> friendShipRepository;
+    testing::StrictMock<tests::common::mock::MockBackendClient> backendClient;
+    testing::StrictMock<tests::common::mock::MockFriendApplicationRepository> friendApplicationRepository;
+    testing::StrictMock<tests::common::mock::MockFriendShipRepository> friendShipRepository;
     std::unique_ptr<sys::relation::domain::FriendApplicationValidator> validator;
     std::unique_ptr<sys::relation::domain::FriendApplicationService> service;
 };

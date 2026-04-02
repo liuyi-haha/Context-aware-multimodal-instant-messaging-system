@@ -56,7 +56,7 @@ namespace ui::message_widgets
             // 异步加载消息
             QtConcurrent::run([this]()-> QList<contract::message::MessageView>
             {
-                return m_messageApplicationService->getMessagesBefore(m_chatSessionId, 20, std::nullopt);
+                return m_messageApplicationService->getRecentMessages(m_chatSessionId, 20);
             }).then(this, [this](const QList<contract::message::MessageView>& views)
             {
                 addMessages(views);

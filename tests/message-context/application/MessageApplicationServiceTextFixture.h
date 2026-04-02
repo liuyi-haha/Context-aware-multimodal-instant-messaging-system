@@ -5,6 +5,7 @@
 #pragma once
 #include <gtest/gtest.h>
 
+#include "common/MockUserClient.h"
 #include "message-context/application/fake/ChatApiGatewayFake.h"
 #include "gmock/gmock-nice-strict.h"
 #include "message-context/mock/RelationClientMock.h"
@@ -21,13 +22,14 @@ class MessageApplicationServiceTestFixture : public testing::Test
 protected:
     void SetUp() override
     {
-        // 设置用户信息
-        sys::common::component::UserCredentialManager::instance().update("123456789", "");
+        // 设置currentUserId，模拟用户已登录
+        sys::common::component::UserCredentialManager::instance().update(currentUserId, "mock_token");
         // 准备Mock端口
         mockRelationClient = std::make_unique<testing::StrictMock<tests::message::mock::RelationClientMock>>();
+        mockUserClient = std::make_unique<testing::StrictMock<tests::common::mock::UserClientMock>>();
         // 准备fake
         fakeChatApiGateway = std::make_unique<testing::StrictMock<tests::message::fake::ChatApiGatewayFake>>();
-        fakePrivateDataBase = std::make_unique<testing::StrictMock<tests::relation::fake::PrivateDataBaseFake>>();
+        fakePrivateDataBase = std::make_unique<testing::StrictMock<tests::common::fake::PrivateDataBaseFake>>();
         // 准备注入fake的Adapter
         backendClientAdapter = std::make_unique<sys::message::adapter::BackendClientAdapter>(fakeChatApiGateway.get());
         messageRepositoryAdapter = std::make_unique<sys::message::adapter::MessageRepositoryAdapter>(
@@ -38,7 +40,7 @@ protected:
             backendClientAdapter.get(), senderValidator.get(), messageRepositoryAdapter.get()
         );
         // 准备装配器
-        messageViewAssembler = std::make_unique<sys::message::application::MessageViewAssembler>();
+        messageViewAssembler = std::make_unique<sys::message::application::MessageViewAssembler>(mockUserClient.get());
         // 准备应用服务
         applicationService = std::make_unique<sys::message::application::MessageApplicationService>(
             messageViewAssembler.get(), messageService.get());
@@ -51,13 +53,15 @@ protected:
     }
 
     std::unique_ptr<testing::StrictMock<tests::message::mock::RelationClientMock>> mockRelationClient;
+    std::unique_ptr<testing::StrictMock<tests::common::mock::UserClientMock>> mockUserClient;
     std::unique_ptr<testing::StrictMock<tests::message::fake::ChatApiGatewayFake>> fakeChatApiGateway;
-    std::unique_ptr<tests::relation::fake::PrivateDataBaseFake> fakePrivateDataBase;
+    std::unique_ptr<tests::common::fake::PrivateDataBaseFake> fakePrivateDataBase;
 
     // 仓储
     std::unique_ptr<sys::message::adapter::MessageRepositoryAdapter> messageRepositoryAdapter;
     // 客户端
     std::unique_ptr<sys::message::adapter::BackendClientAdapter> backendClientAdapter;
+    std::unique_ptr<sys::message::adapter::ChatApiGatewayAdapter> chatApiGatewayAdapter;
     // 领域服务
     std::unique_ptr<sys::message::domain::SenderValidator> senderValidator;
     std::unique_ptr<sys::message::domain::MessageService> messageService;
@@ -65,4 +69,6 @@ protected:
     std::unique_ptr<sys::message::application::MessageViewAssembler> messageViewAssembler;
     // 应用服务
     std::unique_ptr<sys::message::application::MessageApplicationService> applicationService;
+
+    QString currentUserId = "111111111";
 };

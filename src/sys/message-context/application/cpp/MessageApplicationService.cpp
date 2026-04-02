@@ -4,56 +4,99 @@
 
 #include "../include/MessageApplicationService.h"
 
+#include "sys/message-context/domain/object/include/Message.h"
+
 namespace sys
 {
     namespace message::application
     {
-        QHash<QString, MessageApplicationService::LastMessageInfo> MessageApplicationService::
-        getChatSessionLastMessageInfos(const QSet<int>& chatSessionIds)
+        namespace
         {
-            // todo @liuyi
-            // 构造一些mock数据
-            QHash<QString, LastMessageInfo> infos;
-            for (int chatSessionId : chatSessionIds)
+            MessageApplicationService::MessageType toMessageType(const sys::message::domain::ContentType contentType)
             {
-                LastMessageInfo info;
-                info.text = QString("这是聊天会话 %1 的最后一条消息").arg(chatSessionId);
-                info.mediaFileId = std::nullopt;
-                info.type = MessageType::Text;
-                info.sendTime = QDateTime::currentDateTime().addSecs(-chatSessionId * 60); // 模拟不同的发送时间
+                switch (contentType)
+                {
+                case sys::message::domain::ContentType::Text:
+                    return MessageApplicationService::MessageType::Text;
+                case sys::message::domain::ContentType::Photo:
+                    return MessageApplicationService::MessageType::Image;
+                case sys::message::domain::ContentType::Document:
+                    return MessageApplicationService::MessageType::Document;
+                case sys::message::domain::ContentType::Speech:
+                    return MessageApplicationService::MessageType::Speech;
+                default:
+                    return MessageApplicationService::MessageType::NoMessage;
+                }
+            }
+
+            MessageApplicationService::LastMessageInfo toLastMessageInfo(
+                const QSharedPointer<sys::message::domain::Message>& message)
+            {
+                MessageApplicationService::LastMessageInfo info;
+                if (message == nullptr)
+                {
+                    info.type = MessageApplicationService::MessageType::NoMessage;
+                    info.sendTime = QDateTime();
+                    return info;
+                }
+
+                info.sendTime = message->sendTimeValue();
+                const auto content = message->contentValue();
+                if (content == nullptr)
+                {
+                    info.type = MessageApplicationService::MessageType::NoMessage;
+                    return info;
+                }
+
+                info.type = toMessageType(content->getContentType());
+                if (content->getContentType() == sys::message::domain::ContentType::Text)
+                {
+                    const auto* textContent = dynamic_cast<sys::message::domain::TextContent*>(content.data());
+                    if (textContent != nullptr)
+                    {
+                        info.text = textContent->textValue();
+                    }
+                }
+                return info;
+            }
+        }
+
+        QHash<QString, MessageApplicationService::LastMessageInfo> MessageApplicationService::
+        getChatSessionLastMessageInfos(const QSet<QString>& chatSessionIds)
+        {
+            QHash<QString, LastMessageInfo> infos;
+            if (messageService == nullptr)
+            {
+                return infos;
+            }
+
+            for (const auto& chatSessionId : chatSessionIds)
+            {
+                const auto messages = messageService->getRecentMessages(chatSessionId, 1);
+                if (messages.isEmpty())
+                {
+                    LastMessageInfo info;
+                    info.type = MessageType::NoMessage;
+                    info.sendTime = QDateTime();
+                    infos.insert(chatSessionId, info);
+                    continue;
+                }
+
+                infos.insert(chatSessionId, toLastMessageInfo(messages.constLast()));
             }
             return infos;
         }
 
-        QList<contract::message::MessageView> MessageApplicationService::getMessagesBefore(
-            const QString& chatSessionId, int count, const std::optional<QString>& beforeMsgId)
+        QList<contract::message::MessageView> MessageApplicationService::getRecentMessages(
+            const QString& chatSessionId, int count)
         {
-            // todo @liuyi
-            // mock一些数据
-            QList<contract::message::MessageView> messages;
-            for (int i = 0; i < count; ++i)
+            if (messageService == nullptr || messageViewAssembler == nullptr)
             {
-                contract::message::SenderInfo senderInfo = {
-                    .userId = QString("user%1").arg(i % 5),
-                    .nickname = QString("用户%1").arg(i % 5),
-                    .avatarFileId = QString("avatar%1").arg(i % 5)
-                };
-
-                contract::message::MessageView msg;
-                msg.senderInfo = senderInfo;
-                msg.messageType = contract::message::MessageView::MessageType::Text;
-                msg.msgId = QString("%1").arg(beforeMsgId.has_value() ? beforeMsgId->toInt() - i - 1 : 1000 - i);
-                // 模拟消息ID递减
-                msg.senderInfo.userId = QString("user%1").arg(i % 5);
-                msg.isMe = (i % 5 == 0); // 模拟部分消息是自己发送的
-                msg.timestamp = QDateTime::currentDateTime().addSecs(-i * 60);
-                msg.sequence = beforeMsgId.has_value() ? beforeMsgId->toInt() - i - 1 : 1000 - i; // 模拟sequence递减
-                msg.content = QString("这是消息 %1 的内容").arg(msg.msgId);
-
-                messages.append(msg);
+                return {};
             }
 
-            return messages;
+            const auto messages = messageService->getRecentMessages(chatSessionId, count);
+            return messageViewAssembler->assembleMany(messages);
         }
 
         contract::message::SendTextMessageResponse MessageApplicationService::sendTextMessage(

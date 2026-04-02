@@ -4,7 +4,7 @@
 
 #include "sys/relation-context/port/client/include/NotificationClient.h"
 
-namespace tests::relation::mock
+namespace tests::common::mock
 {
     class MockNotificationClient : public sys::relation::port::NotificationClient
     {

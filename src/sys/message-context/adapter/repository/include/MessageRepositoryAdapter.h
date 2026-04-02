@@ -32,7 +32,9 @@ namespace sys::message::adapter
         }
 
         void save(const QSharedPointer<domain::Message>) override;
+        void saveAll(const QList<QSharedPointer<domain::Message>>&) override;
         QSharedPointer<domain::Message> of(const QString& messageId) override;
+        QList<QSharedPointer<domain::Message>> ofRecentMessages(const QString& chatSessionId, int count) override;
 
     private:
         common::component::IPrivateDatabase* privateDatabase = common::component::PrivateDatabase::instance();
@@ -41,5 +43,6 @@ namespace sys::message::adapter
         // 对MessagePO进行增删改查的函数
         void insertMessagePO(const MessagePO& messagePO);
         std::optional<MessagePO> findMessagePOById(const QString& messageId);
+        QList<MessagePO> findRecentMessagePOsByChatSession(const QString& chatSessionId, int count);
     };
 }

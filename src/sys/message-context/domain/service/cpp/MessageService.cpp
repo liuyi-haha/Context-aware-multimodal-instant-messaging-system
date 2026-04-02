@@ -26,4 +26,13 @@ namespace sys::message::domain
         messageRepository->save(message);
         return message;
     }
+
+    QList<QSharedPointer<Message>> MessageService::getRecentMessages(const QString& chatSessionId, int count)
+    {
+        if (count <= 0 || chatSessionId.isEmpty())
+        {
+            return {};
+        }
+        return messageRepository->ofRecentMessages(chatSessionId, count);
+    }
 }

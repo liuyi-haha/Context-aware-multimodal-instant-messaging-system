@@ -5,10 +5,9 @@
 #pragma once
 #include <QString>
 #include <QHash>
-#include <QList>
 #include <QObject>
 
-namespace sys::relation::port
+namespace sys::common::port
 {
     struct UserInfo
     {

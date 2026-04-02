@@ -11,7 +11,7 @@
 // 每个聊天会话都要显示未读消息数量
 // 每个聊天会话都要显示最后一条消息的发送时间，如果是当天发送的，就显示时间（如14:20），如果不是当天发送的，就显示日期（如3/31）
 
-namespace tests::relation::application::get_chat_sessions
+namespace tests::common::application::get_chat_sessions
 {
     TEST_F(RelationApplicationServiceTestFixture, 获取所有聊天会话时_如果没有聊天会话_应该返回空列表)
     {
@@ -54,10 +54,10 @@ namespace tests::relation::application::get_chat_sessions
 
         EXPECT_CALL(*mockUserClient, getUsers(QSet<QString>{peerUserId}))
         .Times(1)
-        .WillOnce(testing::Return(QHash<QString, sys::relation::port::UserInfo>{
+        .WillOnce(testing::Return(QHash<QString, sys::common::port::UserInfo>{
                                                                              {
                                                                                  peerUserId,
-                                                                                 sys::relation::port::UserInfo{
+                                                                                 sys::common::port::UserInfo{
                                                                                      peerUserId, "好友昵称", "fileId-123"
                                                                                  }
                                                                              }
@@ -80,7 +80,7 @@ namespace tests::relation::application::get_chat_sessions
         EXPECT_EQ(chatSession.unreadCount, 3);
     }
 
-    TEST_F(RelationApplicationServiceTestFixture, 获取所有聊天会话时_如果包含聊天会话的最后一条消息有四种不同类型_消息摘要栏应该能区别显示)
+    TEST_F(RelationApplicationServiceTestFixture, 获取所有聊天会话时_如果包含聊天会话的最后一条消息有四种不同类型以及没有消息时_消息摘要栏应该能区别显示)
     {
         // 创建四个聊天会话
         const QString friendShipId1 = "FS-001";
@@ -99,10 +99,15 @@ namespace tests::relation::application::get_chat_sessions
         const QString privateChatSessionId4 = "PCS-004";
         const QString peerUserId4 = "100000005";
 
+        const QString friendShipId5 = "FS-005";
+        const QString privateChatSessionId5 = "PCS-005";
+        const QString peerUserId5 = "100000006";
+
         seedPrivateChatSession(friendShipId1, privateChatSessionId1, peerUserId1, "用户1");
         seedPrivateChatSession(friendShipId2, privateChatSessionId2, peerUserId2, "用户2");
         seedPrivateChatSession(friendShipId3, privateChatSessionId3, peerUserId3, "用户3");
         seedPrivateChatSession(friendShipId4, privateChatSessionId4, peerUserId4, "用户4");
+        seedPrivateChatSession(friendShipId4, privateChatSessionId5, peerUserId5, "用户5");
 
         // 设置mock期望 - 四种不同类型的消息
         const QDateTime messageTime = QDateTime::currentDateTime();
@@ -132,40 +137,48 @@ namespace tests::relation::application::get_chat_sessions
         lastMessageInfo4.type = sys::relation::port::MessageClient::MessageType::Speech;
         lastMessageInfo4.sendTime = messageTime;
 
+        // 没有消息
+        sys::relation::port::MessageClient::LastMessageInfo lastMessageInfo5;
+        lastMessageInfo5.type = sys::relation::port::MessageClient::MessageType::NoMessage;
+
+
         EXPECT_CALL(*mockMessageClient, getLastMessageInfos(testing::_))
         .Times(1)
         .WillOnce(testing::Return(QHash<QString, sys::relation::port::MessageClient::LastMessageInfo>{
                                                                             {privateChatSessionId1, lastMessageInfo1},
                                                                             {privateChatSessionId2, lastMessageInfo2},
                                                                             {privateChatSessionId3, lastMessageInfo3},
-                                                                            {privateChatSessionId4, lastMessageInfo4}
+                                                                            {privateChatSessionId4, lastMessageInfo4},
+                                                                            {privateChatSessionId5, lastMessageInfo5}
                                                                         }));
 
         // 设置未读消息数量
         EXPECT_CALL(*mockNotificationClient, getUnreadChatSessionItemCount(testing::_))
-            .Times(4)
+            .Times(5)
             .WillRepeatedly(testing::Return(0));
 
         EXPECT_CALL(*mockUserClient, getUsers(QSet<QString>{peerUserId1, peerUserId2, peerUserId3, peerUserId4}))
             .Times(1)
-            .WillOnce(testing::Return(QHash<QString, sys::relation::port::UserInfo>{
-                {peerUserId1, sys::relation::port::UserInfo{peerUserId1, "好友昵称", "fileId-123"}},
-                {peerUserId2, sys::relation::port::UserInfo{peerUserId2, "好友昵称", "fileId-123"}},
-                {peerUserId3, sys::relation::port::UserInfo{peerUserId3, "好友昵称", "fileId-123"}},
-                {peerUserId4, sys::relation::port::UserInfo{peerUserId4, "好友昵称", "fileId-123"}},
+            .WillOnce(testing::Return(QHash<QString, sys::common::port::UserInfo>{
+                {peerUserId1, sys::common::port::UserInfo{peerUserId1, "好友昵称", "fileId-123"}},
+                {peerUserId2, sys::common::port::UserInfo{peerUserId2, "好友昵称", "fileId-123"}},
+                {peerUserId3, sys::common::port::UserInfo{peerUserId3, "好友昵称", "fileId-123"}},
+                {peerUserId4, sys::common::port::UserInfo{peerUserId4, "好友昵称", "fileId-123"}},
+                {peerUserId5, sys::common::port::UserInfo{peerUserId5, "好友昵称", "fileId-123"}},
             }));
 
         // 调用获取聊天会话
         const auto chatSessions = relationApplicationService->getChatSessions();
 
         // 验证结果
-        ASSERT_EQ(chatSessions.size(), 4);
+        ASSERT_EQ(chatSessions.size(), 5);
 
         // 验证不同类型的消息摘要
         EXPECT_EQ(chatSessions[0].lastMessageSummary, "这是一条文本消息");
         EXPECT_EQ(chatSessions[1].lastMessageSummary, "[图片]");
         EXPECT_EQ(chatSessions[2].lastMessageSummary, "[文件] 文档.pdf");
         EXPECT_EQ(chatSessions[3].lastMessageSummary, "[语音]");
+        EXPECT_EQ(chatSessions[5].lastMessageSummary, "");
     }
 
     TEST_F(RelationApplicationServiceTestFixture, 获取所有聊天会话时_如果有多个单聊会话_单聊会话应该按照最后一条消息的发送时间降序排序)
@@ -236,10 +249,10 @@ namespace tests::relation::application::get_chat_sessions
 
         EXPECT_CALL(*mockUserClient, getUsers(QSet<QString>{peerUserId1, peerUserId2, peerUserId3}))
             .Times(1)
-            .WillOnce(testing::Return(QHash<QString, sys::relation::port::UserInfo>{
-                {peerUserId1, sys::relation::port::UserInfo{peerUserId1, "好友昵称", "fileId-123"}},
-                {peerUserId2, sys::relation::port::UserInfo{peerUserId2, "好友昵称", "fileId-123"}},
-                {peerUserId3, sys::relation::port::UserInfo{peerUserId3, "好友昵称", "fileId-123"}},
+            .WillOnce(testing::Return(QHash<QString, sys::common::port::UserInfo>{
+                {peerUserId1, sys::common::port::UserInfo{peerUserId1, "好友昵称", "fileId-123"}},
+                {peerUserId2, sys::common::port::UserInfo{peerUserId2, "好友昵称", "fileId-123"}},
+                {peerUserId3, sys::common::port::UserInfo{peerUserId3, "好友昵称", "fileId-123"}},
             }));
 
         // 调用获取聊天会话

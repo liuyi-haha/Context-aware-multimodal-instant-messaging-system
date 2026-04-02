@@ -16,7 +16,7 @@
 #include "sys/relation-context/domain/service/include/FriendShipService.h"
 #include "sys/relation-context/domain/service/include/ParticipantService.h"
 #include "sys/relation-context/domain/service/include/PrivateChatSessionService.h"
-#include "relation-context/mock/MockUserClient.h"
+#include "common/MockUserClient.h"
 #include "relation-context/mock/MockMessageClient.h"
 #include "relation-context/mock/MockNotificationClient.h"
 #include "sys/relation-context/application/assembler/include/FriendApplicationViewAssembler.h"
@@ -56,8 +56,8 @@ protected:
                                 const QString& peerRemark = "我给好友的备注");
 
 protected:
-    tests::relation::fake::ChatApiGatewayFake chatApiGatewayFake;
-    std::unique_ptr<tests::relation::fake::PrivateDataBaseFake> privateDataBaseFake;
+    tests::common::fake::ChatApiGatewayFake chatApiGatewayFake;
+    std::unique_ptr<tests::common::fake::PrivateDataBaseFake> privateDataBaseFake;
     std::unique_ptr<sys::relation::adapter::BackendClientAdapter> backendClient;
     std::unique_ptr<sys::relation::adapter::FriendApplicationRepositoryAdapter> friendApplicationRepository;
     std::unique_ptr<sys::relation::adapter::FriendShipRepositoryAdapter> friendShipRepository;
@@ -69,9 +69,9 @@ protected:
     std::unique_ptr<sys::relation::domain::FriendApplicationValidator> validator;
     std::unique_ptr<sys::relation::domain::FriendApplicationService> friendApplicationService;
     std::unique_ptr<sys::relation::application::RelationApplicationService> relationApplicationService;
-    std::unique_ptr<testing::StrictMock<tests::relation::mock::UserClientMock>> mockUserClient;
-    std::unique_ptr<testing::StrictMock<tests::relation::mock::MockMessageClient>> mockMessageClient;
-    std::unique_ptr<testing::StrictMock<tests::relation::mock::MockNotificationClient>> mockNotificationClient;
+    std::unique_ptr<testing::StrictMock<tests::common::mock::UserClientMock>> mockUserClient;
+    std::unique_ptr<testing::StrictMock<tests::common::mock::MockMessageClient>> mockMessageClient;
+    std::unique_ptr<testing::StrictMock<tests::common::mock::MockNotificationClient>> mockNotificationClient;
     std::unique_ptr<sys::relation::application::FriendApplicationViewAssembler> friendApplicationViewAssembler;
     std::unique_ptr<sys::relation::application::ChatSessionViewAssembler> chatSessionViewAssembler;
 };

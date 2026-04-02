@@ -28,6 +28,7 @@ namespace sys::message::domain
 
     public:
         QSharedPointer<Message> sendTextMessage(const QString& chatSessionId, const QString& text);
+        QList<QSharedPointer<Message>> getRecentMessages(const QString& chatSessionId, int count);
 
     private:
         port::BackendClient* backendClient = QInjection::Inject;

@@ -6,7 +6,7 @@
 #include "contract/system-provider/relation-context-provider/FriendApplicationView.hpp"
 #include "dependencyinjector.h"
 #include "sys/relation-context/domain/object/include/FriendApplication.h"
-#include "sys/relation-context/port/client/include/UserClient.h"
+#include "sys/common/port/UserClient.h"
 
 namespace sys::relation::application
 {
@@ -16,13 +16,13 @@ namespace sys::relation::application
 
     public:
         explicit FriendApplicationViewAssembler(
-            port::UserClient* userClient = QInjection::Inject);
+            common::port::UserClient* userClient = QInjection::Inject);
 
         QList<contract::relation::FriendApplicationView> toFriendApplicationViews(
             const QList<QSharedPointer<domain::FriendApplication>>& friendApplications) const;
 
     private:
-        port::UserClient* userClient = nullptr;
+        common::port::UserClient* userClient = nullptr;
 
     private:
         void fillAvatarFileIdAndName(QList<contract::relation::FriendApplicationView>& views,

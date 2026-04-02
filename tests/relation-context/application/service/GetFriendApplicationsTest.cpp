@@ -12,10 +12,10 @@ TEST_F(RelationApplicationServiceTestFixture, 获取所有好友申请时_单条
 {
     EXPECT_CALL(*mockUserClient, getUsers(testing::_))
         .Times(1)
-        .WillOnce(testing::Return(QHash<QString, sys::relation::port::UserInfo>{
+        .WillOnce(testing::Return(QHash<QString, sys::common::port::UserInfo>{
                                                           {
                                                               "100000002",
-                                                              sys::relation::port::UserInfo{
+                                                              sys::common::port::UserInfo{
                                                                   "100000002", "MappedNick", "mapped-avatar"
                                                               }
                                                           }
@@ -47,16 +47,16 @@ TEST_F(RelationApplicationServiceTestFixture, 获取所有好友申请时_如果
 {
     EXPECT_CALL(*mockUserClient, getUsers(testing::_))
         .Times(1)
-        .WillOnce(testing::Return(QHash<QString, sys::relation::port::UserInfo>{
+        .WillOnce(testing::Return(QHash<QString, sys::common::port::UserInfo>{
                                                           {
                                                               "100000002",
-                                                              sys::relation::port::UserInfo{
+                                                              sys::common::port::UserInfo{
                                                                   "100000002", "Nick-2", "avatar-2"
                                                               }
                                                           },
                                                           {
                                                               "100000003",
-                                                              sys::relation::port::UserInfo{
+                                                              sys::common::port::UserInfo{
                                                                   "100000003", "Nick-3", "avatar-3"
                                                               }
                                                           }
@@ -93,16 +93,16 @@ TEST_F(RelationApplicationServiceTestFixture, 获取所有好友申请时_如果
 {
     EXPECT_CALL(*mockUserClient, getUsers(testing::_))
         .Times(1)
-        .WillOnce(testing::Return(QHash<QString, sys::relation::port::UserInfo>{
+        .WillOnce(testing::Return(QHash<QString, sys::common::port::UserInfo>{
                                                           {
                                                               "100000002",
-                                                              sys::relation::port::UserInfo{
+                                                              sys::common::port::UserInfo{
                                                                   "100000002", "Friend-A", "avatar-a"
                                                               }
                                                           },
                                                           {
                                                               "100000003",
-                                                              sys::relation::port::UserInfo{
+                                                              sys::common::port::UserInfo{
                                                                   "100000003", "Friend-B", "avatar-b"
                                                               }
                                                           }
@@ -138,22 +138,22 @@ TEST_F(RelationApplicationServiceTestFixture, 获取所有好友申请时_如果
 {
     EXPECT_CALL(*mockUserClient, getUsers(testing::_))
         .Times(1)
-        .WillOnce(testing::Return(QHash<QString, sys::relation::port::UserInfo>{
+        .WillOnce(testing::Return(QHash<QString, sys::common::port::UserInfo>{
                                                           {
                                                               "100000002",
-                                                              sys::relation::port::UserInfo{
+                                                              sys::common::port::UserInfo{
                                                                   "100000002", "Nick-2", "avatar-2"
                                                               }
                                                           },
                                                           {
                                                               "100000003",
-                                                              sys::relation::port::UserInfo{
+                                                              sys::common::port::UserInfo{
                                                                   "100000003", "Nick-3", "avatar-3"
                                                               }
                                                           },
                                                           {
                                                               "100000004",
-                                                              sys::relation::port::UserInfo{
+                                                              sys::common::port::UserInfo{
                                                                   "100000004", "Nick-4", "avatar-4"
                                                               }
                                                           }

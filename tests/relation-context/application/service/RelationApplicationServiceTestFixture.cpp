@@ -8,12 +8,12 @@ void RelationApplicationServiceTestFixture::SetUp()
     sys::common::component::UserCredentialManager::instance().update("100000001", "token");
 
     // 准备Mock端口
-    mockMessageClient = std::make_unique<testing::StrictMock<tests::relation::mock::MockMessageClient>>();
-    mockNotificationClient = std::make_unique<testing::StrictMock<tests::relation::mock::MockNotificationClient>>();
-    mockUserClient = std::make_unique<testing::StrictMock<tests::relation::mock::UserClientMock>>();
+    mockMessageClient = std::make_unique<testing::StrictMock<tests::common::mock::MockMessageClient>>();
+    mockNotificationClient = std::make_unique<testing::StrictMock<tests::common::mock::MockNotificationClient>>();
+    mockUserClient = std::make_unique<testing::StrictMock<tests::common::mock::UserClientMock>>();
 
     // 准备Fake类
-    privateDataBaseFake = std::make_unique<tests::relation::fake::PrivateDataBaseFake>();
+    privateDataBaseFake = std::make_unique<tests::common::fake::PrivateDataBaseFake>();
 
     // 准备注入Fake的Adapter
     friendApplicationRepository = std::make_unique<sys::relation::adapter::FriendApplicationRepositoryAdapter>(
@@ -171,15 +171,15 @@ void RelationApplicationServiceTestFixture::seedApplication(const QString& frien
 
     friendApplicationRepository->save(application);
 
-    tests::relation::fake::ChatApiGatewayFake::FriendApplicationState fakeStatus =
-        tests::relation::fake::ChatApiGatewayFake::FriendApplicationState::Pending;
+    tests::common::fake::ChatApiGatewayFake::FriendApplicationState fakeStatus =
+        tests::common::fake::ChatApiGatewayFake::FriendApplicationState::Pending;
     if (status == sys::relation::domain::ApplicationStatus::Accepted)
     {
-        fakeStatus = tests::relation::fake::ChatApiGatewayFake::FriendApplicationState::Accepted;
+        fakeStatus = tests::common::fake::ChatApiGatewayFake::FriendApplicationState::Accepted;
     }
     else if (status == sys::relation::domain::ApplicationStatus::Rejected)
     {
-        fakeStatus = tests::relation::fake::ChatApiGatewayFake::FriendApplicationState::Rejected;
+        fakeStatus = tests::common::fake::ChatApiGatewayFake::FriendApplicationState::Rejected;
     }
 
     chatApiGatewayFake.seedFriendApplication(

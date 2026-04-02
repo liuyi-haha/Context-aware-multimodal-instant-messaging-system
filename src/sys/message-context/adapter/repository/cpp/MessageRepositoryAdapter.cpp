@@ -6,6 +6,7 @@
 
 #include <QSqlError>
 #include <QSqlQuery>
+#include <algorithm>
 
 #include "sys/common/exception/InfraExcception.h"
 
@@ -149,6 +150,41 @@ namespace sys::message::adapter
         insertMessagePO(po);
     }
 
+    void MessageRepositoryAdapter::saveAll(const QList<QSharedPointer<domain::Message>>& messages)
+    {
+        if (messages.isEmpty())
+        {
+            return;
+        }
+
+        QSqlDatabase* db = privateDatabase->getDataBase();
+        ensureMessageTableReady(db);
+
+        if (!db->transaction())
+        {
+            throw core::InfraException("批量保存消息失败: 无法开启事务");
+        }
+
+        try
+        {
+            for (const auto& message : messages)
+            {
+                MessagePO po;
+                po.from(message);
+                insertMessagePO(po);
+            }
+            if (!db->commit())
+            {
+                throw core::InfraException("批量保存消息失败: 提交事务失败");
+            }
+        }
+        catch (...)
+        {
+            db->rollback();
+            throw;
+        }
+    }
+
     QSharedPointer<domain::Message> MessageRepositoryAdapter::of(const QString& messageId)
     {
         auto po = findMessagePOById(messageId);
@@ -157,6 +193,19 @@ namespace sys::message::adapter
             return nullptr;
         }
         return po->toModel();
+    }
+
+    QList<QSharedPointer<domain::Message>> MessageRepositoryAdapter::ofRecentMessages(const QString& chatSessionId,
+        int count)
+    {
+        QList<QSharedPointer<domain::Message>> messages;
+        auto pos = findRecentMessagePOsByChatSession(chatSessionId, count);
+        messages.reserve(pos.size());
+        for (auto& po : pos)
+        {
+            messages.append(po.toModel());
+        }
+        return messages;
     }
 
     void MessageRepositoryAdapter::insertMessagePO(const MessagePO& messagePO)
@@ -217,5 +266,43 @@ namespace sys::message::adapter
         MessagePO po;
         po.from(query);
         return po;
+    }
+
+    QList<MessageRepositoryAdapter::MessagePO> MessageRepositoryAdapter::findRecentMessagePOsByChatSession(
+        const QString& chatSessionId, int count)
+    {
+        if (chatSessionId.isEmpty() || count <= 0)
+        {
+            return {};
+        }
+
+        QSqlDatabase* db = privateDatabase->getDataBase();
+        ensureMessageTableReady(db);
+
+        QSqlQuery query(*db);
+        query.prepare(
+            "SELECT message_id, chat_session_id, seq_in_chat_session, send_time, sender_user_id, content_type, "
+            "text_content "
+            "FROM message WHERE chat_session_id = :chat_session_id "
+            "ORDER BY seq_in_chat_session DESC LIMIT :count");
+        query.bindValue(":chat_session_id", chatSessionId);
+        query.bindValue(":count", count);
+
+        if (!query.exec())
+        {
+            throw core::InfraException("查询最近消息失败: " + query.lastError().text());
+        }
+
+        QList<MessagePO> rows;
+        while (query.next())
+        {
+            MessagePO po;
+            po.from(query);
+            rows.append(po);
+        }
+
+        // DB按seq降序查出，返回给上层时按seq升序，便于聊天窗口正向渲染。
+        std::reverse(rows.begin(), rows.end());
+        return rows;
     }
 }

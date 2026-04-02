@@ -11,7 +11,7 @@
 #include "sys/relation-context/domain/object/include/PrivateChatSession.h"
 #include "sys/relation-context/port/client/include/MessageClient.h"
 #include "sys/relation-context/port/client/include/NotificationClient.h"
-#include "sys/relation-context/port/client/include/UserClient.h"
+#include "sys/common/port/UserClient.h"
 #include "sys/relation-context/port/repository/include/FriendShipRepository.h"
 #include "sys/relation-context/port/repository/include/ParticipantRepository.h"
 
@@ -25,7 +25,7 @@ namespace sys::relation::application
         ChatSessionViewAssembler(port::MessageClient* messageClient = QInjection::Inject,
                                  port::NotificationClient* notificationClient = QInjection::Inject,
                                  port::ParticipantRepository* participantRepository = QInjection::Inject,
-                                 port::UserClient* userClient = QInjection::Inject,
+                                 common::port::UserClient* userClient = QInjection::Inject,
                                  QObject* parent = nullptr)
             : messageClient(messageClient),
               notificationClient(notificationClient),
@@ -49,6 +49,6 @@ namespace sys::relation::application
         port::MessageClient* messageClient = nullptr;
         port::NotificationClient* notificationClient = nullptr;
         port::ParticipantRepository* participantRepository = nullptr;
-        port::UserClient* userClient = nullptr;
+        common::port::UserClient* userClient = nullptr;
     };
 }

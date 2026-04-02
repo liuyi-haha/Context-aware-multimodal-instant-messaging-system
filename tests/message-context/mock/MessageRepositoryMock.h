@@ -13,5 +13,8 @@ namespace tests::message::mock
     public:
         MOCK_METHOD(void, save, (const QSharedPointer<sys::message::domain::Message>), (override));
         MOCK_METHOD(QSharedPointer<sys::message::domain::Message>, of, (const QString& messageId), (override));
+        MOCK_METHOD(void, saveAll, (const QList<QSharedPointer<sys::message::domain::Message>>&), (override));
+        MOCK_METHOD(QList<QSharedPointer<sys::message::domain::Message>>, ofRecentMessages,
+                    (const QString& chatSessionId, int count), (override));
     };
 }

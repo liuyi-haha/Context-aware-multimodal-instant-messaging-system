@@ -4,7 +4,7 @@
 
 #include "sys/relation-context/port/repository/include/FriendShipRepository.h"
 
-namespace tests::relation::mock
+namespace tests::common::mock
 {
     class MockFriendShipRepository : public sys::relation::port::FriendShipRepository
     {

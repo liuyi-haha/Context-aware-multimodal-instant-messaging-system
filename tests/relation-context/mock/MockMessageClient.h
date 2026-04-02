@@ -3,7 +3,7 @@
 #include <gmock/gmock.h>
 #include "sys/relation-context/port/client/include/MessageClient.h"
 
-namespace tests::relation::mock
+namespace tests::common::mock
 {
     class MockMessageClient : public sys::relation::port::MessageClient
     {
