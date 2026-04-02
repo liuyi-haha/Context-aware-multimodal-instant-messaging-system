@@ -35,7 +35,9 @@ namespace sys::auth::domain
 
         const auto loginResult = backendClient->login(account, passWord.hashedValue());
 
-        common::component::UserCredentialManager::instance().update(loginResult.userId, loginResult.token);
+        common::component::UserCredentialManager::instance().update(loginResult.userId, loginResult.token,
+                                                                    loginResult.nickname, loginResult.avatarFileId,
+                                                                    loginResult.description, loginResult.phone);
         return loginResult.userId;
     }
 } // namespace sys::auth::domain

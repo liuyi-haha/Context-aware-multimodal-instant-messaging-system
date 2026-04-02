@@ -60,12 +60,32 @@ paths:
                     type: boolean
                   data:
                     type: object
+                    required:
+                      - token
+                      - userId
+                      - phone
+                      - nickname
+                      - description
+                      - avatarFileId
                     properties:
                       token:
                         type: string
                         description: JWT Token，后续请求放在 Authorization 头
                       userId:
                         type: string
+                        description: 用户ID
+                      phone:
+                        type: string
+                        description: 用户手机号
+                      nickname:
+                        type: string
+                        description: 用户昵称
+                      description:
+                        type: string
+                        description: 用户个性签名
+                      avatarFileId:
+                        type: string
+                        description: 头像文件ID
                   errCode:
                     type: string
                     description: 错误码

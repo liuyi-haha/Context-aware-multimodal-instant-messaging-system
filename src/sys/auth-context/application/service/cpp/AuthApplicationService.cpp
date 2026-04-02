@@ -56,6 +56,12 @@ namespace sys::auth::application
 
     bool AuthApplicationService::checkConfigAndSetResponse(contract::BaseResponse& response)
     {
+        if (userCredentialService == nullptr)
+        {
+            response.success = false;
+            response.errMsg = "AuthApplicationService is not properly configured: userCredentialService is null";
+            return false;
+        }
         return true;
     }
 } // namespace sys::auth::application

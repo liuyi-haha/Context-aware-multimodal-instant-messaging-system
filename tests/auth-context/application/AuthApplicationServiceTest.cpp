@@ -96,4 +96,6 @@ TEST_F(AuthApplicationServiceTest, 登录时_如果账号密码正确_应该成�
     EXPECT_EQ(apiGatewayFake.loginCallCount, 1);
     EXPECT_EQ(sys::common::component::UserCredentialManager::instance().getCurrentUserId(), fakeUser.userId);
     EXPECT_EQ(sys::common::component::UserCredentialManager::instance().getCurrentToken(), fakeUser.token);
+    EXPECT_EQ(sys::common::component::UserCredentialManager::instance().getNickname(), fakeUser.nickname);
+    EXPECT_EQ(sys::common::component::UserCredentialManager::instance().getAvatarFileId(), fakeUser.avatarFileId);
 }

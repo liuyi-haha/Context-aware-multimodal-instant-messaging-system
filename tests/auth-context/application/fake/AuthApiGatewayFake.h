@@ -16,6 +16,10 @@ namespace tests::auth::fake
             QString account;
             QString password;
             QString userId;
+            QString avatarFileId;
+            QString phone;
+            QString description;
+            QString nickname;
             QString token;
         };
 
@@ -30,7 +34,18 @@ namespace tests::auth::fake
                 const QString hashedPassword = sys::auth::domain::Password::of(user.password).hashedValue();
                 if (user.account == request.getAccount() && hashedPassword == request.getPassword())
                 {
-                    return successResponse(user.userId, user.token);
+                    OpenAPIAuth::OAIAuthLogin_200_response_data respData;
+                    respData.setUserId(user.userId);
+                    respData.setToken(user.token);
+                    respData.setNickname(user.nickname);
+                    respData.setAvatarFileId(user.avatarFileId);
+                    respData.setPhone(user.phone);
+                    respData.setDescription(user.description);
+
+                    OpenAPIAuth::OAIAuthLogin_200_response resp;
+                    resp.setSuccess(true);
+                    resp.setData(respData);
+                    return resp;
                 }
             }
 
@@ -40,20 +55,6 @@ namespace tests::auth::fake
         const FakeUser& defaultUser() const
         {
             return fakeUsers.front();
-        }
-
-        static OpenAPIAuth::OAIAuthLogin_200_response successResponse(const QString& userId, const QString& token)
-        {
-            OpenAPIAuth::OAIAuthLogin_200_response response;
-            OpenAPIAuth::OAIAuthLogin_200_response_data data;
-            data.setUserId(userId);
-            data.setToken(token);
-
-            response.setSuccess(true);
-            response.setData(data);
-            response.setErrCode(QString());
-            response.setErrMsg(QString());
-            return response;
         }
 
         static OpenAPIAuth::OAIAuthLogin_200_response failureResponse(const QString& errCode, const QString& errMsg)
@@ -71,8 +72,8 @@ namespace tests::auth::fake
 
     private:
         const QVector<FakeUser> fakeUsers = {
-            {"13800138000", "abc_123", "123456789", "token-001"},
-            {"13900139000", "hello_456", "234567891", "token-002"}
+            {"13800138000", "abc_123", "123456789", "avatar_file_id1", "13800138000", "个性签名1", "昵称1", "token-001"},
+            {"13900139000", "hello_456", "234567891", "avatar_file_id2", "13900139000", "个性签名2", "昵称1""token-002"}
         };
     };
 }

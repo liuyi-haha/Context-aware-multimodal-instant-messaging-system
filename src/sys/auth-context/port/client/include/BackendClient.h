@@ -10,11 +10,16 @@ namespace sys::auth::port
     class BackendClient : public QObject
     {
         Q_OBJECT
+
     public:
         struct LoginResult
         {
             QString userId;
             QString token;
+            QString avatarFileId;
+            QString nickname;
+            QString phone;
+            QString description;
         };
 
         virtual ~BackendClient() = default;

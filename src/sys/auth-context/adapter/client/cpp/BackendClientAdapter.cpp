@@ -123,6 +123,9 @@ namespace sys::auth::adapter
             throw core::InfraException("登录响应缺少 userId 或 token");
         }
 
-        return {data.getUserId(), data.getToken()};
+        return {
+            data.getUserId(), data.getToken(), data.getAvatarFileId(), data.getNickname(), data.getPhone(),
+            data.getDescription(),
+        };
     }
 }
