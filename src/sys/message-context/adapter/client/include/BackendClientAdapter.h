@@ -12,23 +12,36 @@ namespace sys::message::adapter
     class IChatApiGateway
     {
     public:
+        virtual ~IChatApiGateway() = default;
         virtual OpenAPIChat::OAIChatSendTextMessage_200_response sendTextMessage(
-            const OpenAPIChat::OAIChatSendTextMessage_request& request) = 0;
+            const OpenAPIChat::OAIChatSendTextMessage_request& request,
+            const QString& chatSessionId) = 0;
     };
 
     class ChatApiGatewayAdapter : public IChatApiGateway
     {
     public:
         OpenAPIChat::OAIChatSendTextMessage_200_response sendTextMessage(
-            const OpenAPIChat::OAIChatSendTextMessage_request& request) override;
+            const OpenAPIChat::OAIChatSendTextMessage_request& request,
+            const QString& chatSessionId) override;
     };
 
     class BackendClientAdapter : public port::BackendClient
     {
     public:
-        BackendClientAdapter() = default;
+        enum class SendTextMessageErrCode
+        {
+            None,
+            SessionNotFound,
+            FriendshipRequired,
+            NotParticipant,
+            ContentEmpty,
+            ContentTooLong,
+            UnknownError
+        };
 
-        explicit BackendClientAdapter(IChatApiGateway* chatApiGateway)
+    public:
+        explicit BackendClientAdapter(IChatApiGateway* chatApiGateway = new ChatApiGatewayAdapter())
             : chatApiGateway(chatApiGateway)
         {
         }
@@ -36,6 +49,9 @@ namespace sys::message::adapter
         SendTextMessageResult sendTextMessage(const QString& chatSessionId, const QString& text) override;
 
     private:
-        IChatApiGateway* chatApiGateway = new ChatApiGatewayAdapter();
+        static SendTextMessageErrCode fromSendTextErrCode(const QString& errCode);
+
+    private:
+        IChatApiGateway* chatApiGateway = nullptr;
     };
 }
