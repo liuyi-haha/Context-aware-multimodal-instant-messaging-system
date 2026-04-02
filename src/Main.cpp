@@ -27,6 +27,8 @@
 #include "sys/relation-context/port/repository/include/FriendApplicationRepository.h"
 #include "sys/starter/include/AppStarter.h"
 #include "ui/main-widgets/include/MainWindow.h"
+#include "ui/relation-widgets/include/FriendApplicationList.h"
+#include "ui/main-widgets/include/MiddleStack.h"
 #include "ui/user-widgets/include/RegisterWidget.h"
 
 void seedApplication(const QString& friendApplicationId,
@@ -77,68 +79,51 @@ void setDatas()
                     sys::relation::domain::ApplicationStatus::Accepted);
 }
 
+
 int main(int argc, char* argv[])
 {
+    // 设置currentUserId，模拟用户登录状态
+    sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token", "Mock User",
+                                                                     "avatar_file_id", "description",
+                                                                     "1234567890");
     QApplication a(argc, argv);
-    // 设置userId和token，模拟用户已登录
-    sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token");
+
+    //sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token");
     sys::starter::AppStarter::bootstrap();
-    setDatas();
-    //auto w = new ui::main_widgets::MainWindow();
-    auto w = new ui::main_widgets::MainWindow();
-    // auto w = new ui::user_widgets::UserIdDisplayWidget("dfaffadfafe");
+    //setDatas();
+    auto w = new ui::main_widgets::MainWindow;
+
     w->show();
     return a.exec();
 }
 
-// int a = 10;
-//
-// class Abstract : public QObject
+// class Base : public QObject
 // {
 //     Q_OBJECT
 //
 // public:
-//     virtual void doSomething() = 0;
-//     virtual ~Abstract() = default;
+//     virtual void func() = 0;
 // };
 //
-// class Myclasss : public Abstract
+// class Derived : public Base
 // {
-//     Q_OBJECT
+//     void func() override
+//     {
+//         qDebug() << "Derived func";
+//     }
 //
 // public:
-//     Myclasss()
+//     void say()
 //     {
-//         qDebug() << "Myclasss" << a++;
-//     }
-//
-//     void doSomething() override
-//     {
-//         qDebug() << "MyClass is doing something!";
-//     }
-//
-//     ~Myclasss() override
-//     {
-//         qDebug() << "Myclasss析构了";
+//         qDebug() << "hello";
 //     }
 // };
 //
-// void foo(Abstract* object = QInjection::Inject)
+// void test()
 // {
-//     // do something with object
+//     QInjection::addSingleton(new Derived);
+//     Base* basePtr = QInjection::Inject;
+//     //QInjection::Pointer<Base> basePtr;
+//
+//     static_cast<Derived*>(basePtr)->say();
 // }
-//
-// int main(int argc, char* argv[])
-// {
-//     QCoreApplication a(argc, argv);
-//
-//     QInjection::addSingleton(new Myclasss());
-//
-//     QInjection::Pointer<Myclasss> ptr;
-//     ptr->doSomething();
-//     Myclasss* p = ptr.data();
-//     p = new Myclasss();
-//     return a.exec();
-// }
-//
-// #include "Main.moc"

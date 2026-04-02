@@ -26,6 +26,8 @@ namespace sys::message::adapter
         };
 
     public:
+        MessageRepositoryAdapter() = default;
+
         explicit MessageRepositoryAdapter(common::component::IPrivateDatabase* privateDatabase)
             : privateDatabase(privateDatabase)
         {

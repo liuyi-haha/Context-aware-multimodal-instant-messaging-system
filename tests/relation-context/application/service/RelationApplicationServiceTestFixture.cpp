@@ -5,7 +5,7 @@
 
 void RelationApplicationServiceTestFixture::SetUp()
 {
-    sys::common::component::UserCredentialManager::instance().update("100000001", "token");
+    sys::common::component::UserCredentialManager::instance().update(currentUserId, "token");
 
     // 准备Mock端口
     mockMessageClient = std::make_unique<testing::StrictMock<tests::common::mock::MockMessageClient>>();
@@ -33,7 +33,7 @@ void RelationApplicationServiceTestFixture::SetUp()
 
     friendShipService = std::make_unique<sys::relation::domain::FriendShipService>(friendShipRepository.get());
     privateChatSessionService = std::make_unique<sys::relation::domain::PrivateChatSessionService>(
-        privateChatSessionRepository.get(), participantRepository.get());
+        privateChatSessionRepository.get(), participantRepository.get(), friendShipRepository.get());
     participantService = std::make_unique<sys::relation::domain::ParticipantService>(participantRepository.get());
     friendApplicationService = std::make_unique<sys::relation::domain::FriendApplicationService>(
         backendClient.get(),
@@ -62,8 +62,8 @@ void RelationApplicationServiceTestFixture::SetUp()
         friendApplicationViewAssembler.get(),
         privateChatSessionService.get(),
         chatSessionViewAssembler.get());
-    chatApiGatewayFake.setCurrentUserId("100000001");
-    chatApiGatewayFake.seedUsers({"100000001", "100000002", "100000003"});
+    chatApiGatewayFake.setCurrentUserId(currentUserId);
+    chatApiGatewayFake.seedUsers({currentUserId, "100000002", "100000003"});
 }
 
 void RelationApplicationServiceTestFixture::TearDown()

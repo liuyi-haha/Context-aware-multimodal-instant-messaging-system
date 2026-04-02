@@ -4,7 +4,6 @@
 
 #include "relation-context/application/fake/PrivateDataBaseFake.h"
 #include "relation-context/application/fake/ChatApiGatewayFake.h"
-#include "sys/common/component/UserCredentialManager.h"
 #include "sys/relation-context/adapter/client/include/BackendClientAdapter.h"
 #include "sys/relation-context/adapter/repository/include/FriendApplicationRepositoryAdapter.h"
 #include "sys/relation-context/adapter/repository/include/FriendRelationRepositoryAdapter.h"
@@ -74,4 +73,5 @@ protected:
     std::unique_ptr<testing::StrictMock<tests::common::mock::MockNotificationClient>> mockNotificationClient;
     std::unique_ptr<sys::relation::application::FriendApplicationViewAssembler> friendApplicationViewAssembler;
     std::unique_ptr<sys::relation::application::ChatSessionViewAssembler> chatSessionViewAssembler;
+    QString currentUserId = "100000001";
 };

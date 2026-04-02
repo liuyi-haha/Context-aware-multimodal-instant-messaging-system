@@ -23,7 +23,6 @@ namespace sys::relation::starter
     void RelationContextStarter::bootstrap()
     {
         QInjection::addSingleton(new adapter::BackendClientAdapter);
-        QInjection::addSingleton(new common::adapter::UserClientAdapter);
         QInjection::addSingleton(new adapter::NotificationClientAdapter);
         QInjection::addSingleton(new adapter::MessageClientAdapter);
 

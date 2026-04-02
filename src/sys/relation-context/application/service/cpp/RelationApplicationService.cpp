@@ -108,6 +108,7 @@ namespace sys::relation::application
         }
         catch (const std::exception& ex)
         {
+            qDebug() << "获取好友申请列表失败:" << QString(ex.what());
             return {};
         }
     }
@@ -129,7 +130,6 @@ namespace sys::relation::application
 
     void RelationApplicationService::checkSenderHasPermissionToSendMessage(const QString& chatSessionId)
     {
-        // todo @liuyi
         privateChatSessionService->checkCurrentUserHasPermissionToSendMessage(chatSessionId);
     }
 

@@ -69,6 +69,8 @@ namespace sys::relation::domain
 
     void PrivateChatSessionService::checkCurrentUserHasPermissionToSendMessage(const QString& chatSessionId)
     {
+        checkConfig();
+
         QString currentUserId = common::component::UserCredentialManager::instance().getCurrentUserId();
         auto privateChatSession = privateChatSessionRepository->of(chatSessionId);
         // 检查单聊会话是否存在
@@ -92,7 +94,8 @@ namespace sys::relation::domain
 
     void PrivateChatSessionService::checkConfig()
     {
-        if (privateChatSessionRepository == nullptr || participantRepository == nullptr)
+        if (privateChatSessionRepository == nullptr || participantRepository == nullptr || friendShipRepository ==
+            nullptr)
         {
             throw sys::core::InfraException("PrivateChatSessionService is not properly configured.");
         }

@@ -22,6 +22,8 @@ namespace sys::message::application
         {
         }
 
+        MessageViewAssembler() = default;
+
         contract::message::MessageView assemble(const QSharedPointer<domain::Message>& message);
         QList<contract::message::MessageView> assembleMany(const QList<QSharedPointer<domain::Message>>& messages);
         contract::message::MessageView assembleMyMessage(const QSharedPointer<domain::Message>& message);

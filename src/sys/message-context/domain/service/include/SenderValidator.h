@@ -13,6 +13,7 @@ namespace sys::message::domain
 
     public:
         void checkSenderHasPermissionToSendMessage(const QString& chatSessionId);
+        SenderValidator() = default;
 
         explicit SenderValidator(port::RelationClient* relationClient)
             : relationClient(relationClient)

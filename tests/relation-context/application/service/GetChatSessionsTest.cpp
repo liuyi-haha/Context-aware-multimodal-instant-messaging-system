@@ -157,7 +157,8 @@ namespace tests::common::application::get_chat_sessions
             .Times(5)
             .WillRepeatedly(testing::Return(0));
 
-        EXPECT_CALL(*mockUserClient, getUsers(QSet<QString>{peerUserId1, peerUserId2, peerUserId3, peerUserId4}))
+        EXPECT_CALL(*mockUserClient,
+                    getUsers(QSet<QString>{peerUserId1, peerUserId2, peerUserId3, peerUserId4, peerUserId5}))
             .Times(1)
             .WillOnce(testing::Return(QHash<QString, sys::common::port::UserInfo>{
                 {peerUserId1, sys::common::port::UserInfo{peerUserId1, "好友昵称", "fileId-123"}},
@@ -178,7 +179,7 @@ namespace tests::common::application::get_chat_sessions
         EXPECT_EQ(chatSessions[1].lastMessageSummary, "[图片]");
         EXPECT_EQ(chatSessions[2].lastMessageSummary, "[文件] 文档.pdf");
         EXPECT_EQ(chatSessions[3].lastMessageSummary, "[语音]");
-        EXPECT_EQ(chatSessions[5].lastMessageSummary, "");
+        EXPECT_EQ(chatSessions[4].lastMessageSummary, "");
     }
 
     TEST_F(RelationApplicationServiceTestFixture, 获取所有聊天会话时_如果有多个单聊会话_单聊会话应该按照最后一条消息的发送时间降序排序)

@@ -19,10 +19,8 @@ namespace ui::main_widgets
         auto* robotPlaceholder = new QWidget();
         robotPlaceholder->setStyleSheet("background-color: white;");
 
-        m_chatSessionList = new ui::relation_widgets::ChatSessionList();
-
         m_friendApplicationList = new ui::relation_widgets::FriendApplicationList();
-
+        m_chatSessionList = new ui::relation_widgets::ChatSessionList();
         auto* friendPlaceholder = new QWidget();
         friendPlaceholder->setStyleSheet("background-color: white;");
 
@@ -39,8 +37,7 @@ namespace ui::main_widgets
     }
 
     MiddleStack::MiddleStack(QWidget* parent)
-        : QStackedWidget(parent),
-          m_friendApplicationList(nullptr)
+        : QStackedWidget(parent)
     {
         initStyle();
         createPages();
