@@ -9,4 +9,8 @@ namespace sys::message::adapter
     void MessageRepositoryAdapter::save(const QSharedPointer<domain::Message>)
     {
     }
+
+    QSharedPointer<domain::Message> MessageRepositoryAdapter::of(const QString& messageId)
+    {
+    }
 }

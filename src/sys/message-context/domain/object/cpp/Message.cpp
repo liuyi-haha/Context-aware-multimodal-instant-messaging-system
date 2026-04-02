@@ -24,6 +24,23 @@ namespace sys::message::domain
         return senderUserId;
     }
 
+    bool Content::operator==(const Content& other) const
+    {
+        // 先检查类型是否相等
+        if (getContentType() != other.getContentType())
+        {
+            return false;
+        }
+        // 再调用多态的equalsContent函数比较内容
+        return equals(other);
+    }
+
+    bool TextContent::equals(const Content& other) const
+    {
+        auto& textContent = static_cast<const TextContent&>(other);
+        return textContent.textValue() == text;
+    }
+
     QSharedPointer<Content> ContentFactory::createTextContent(const QString& text)
     {
         return TextContent::of(text);
@@ -91,7 +108,7 @@ namespace sys::message::domain
     {
     }
 
-    ContentType TextContent::getContentType()
+    ContentType TextContent::getContentType() const
     {
         return ContentType::Text;
     }

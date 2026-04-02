@@ -210,6 +210,8 @@ set(IMS_SHARED_EXECUTABLE_SOURCES
         sys/message-context/port/repository/MessageRepository.h
         sys/message-context/adapter/repository/cpp/MessageRepositoryAdapter.cpp
         sys/message-context/adapter/repository/include/MessageRepositoryAdapter.h
+        sys/message-context/application/cpp/MessageViewAssembler.cpp
+        sys/message-context/application/include/MessageViewAssembler.h
 )
 
 set(IMS_SHARED_LINK_LIBS
@@ -332,6 +334,7 @@ add_executable(run_tests
         ../tests/message-context/domain/object/MessageTest.cpp
         ../tests/message-context/domain/service/MessageServiceTest.cpp
         ../tests/message-context/mock/MessageRepositoryMock.h
+        contract/system-provider/message-context-provider/SendTextMessage.h
 )
 
 

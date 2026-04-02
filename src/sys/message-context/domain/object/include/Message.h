@@ -37,13 +37,23 @@ namespace sys::message::domain
         SendingInfo(const QDateTime& sendTime, const QString& senderUserId);
         QDateTime sendTimeVal() const;
         QString senderUserIdVal() const;
+
+        // 重载operator==，方便测试中断言
+        bool operator==(const SendingInfo& other) const
+        {
+            return sendTime == other.sendTime && senderUserId == other.senderUserId;
+        }
     };
 
     class Content
     {
     public:
         virtual ~Content() = default;
-        virtual ContentType getContentType() = 0;
+        virtual ContentType getContentType() const = 0;
+
+        virtual bool equals(const Content& other) const = 0;
+        // 重载operator==，方便测试中断言
+        bool operator==(const Content& other) const;
     };
 
     class ContentFactory
@@ -65,9 +75,10 @@ namespace sys::message::domain
     class TextContent final : public Content
     {
     public:
-        ContentType getContentType() override;
+        ContentType getContentType() const override;
         static bool checkText(const QString& text);
         static QSharedPointer<TextContent> of(const QString& text);
+        bool equals(const Content& other) const override;
 
         QString textValue() const;
 
@@ -86,7 +97,7 @@ namespace sys::message::domain
     class PhotoContent final : public FileContent
     {
     public:
-        ContentType getContentType() override;
+        ContentType getContentType() const override;
 
     private:
         const PhotoContentType type = PhotoContentType::Png;
@@ -101,7 +112,7 @@ namespace sys::message::domain
     class DocumentContent final : public FileContent
     {
     public:
-        ContentType getContentType() override;
+        ContentType getContentType() const override;
 
     private:
         const QString name;
@@ -111,7 +122,7 @@ namespace sys::message::domain
     class SpeechContent final : public FileContent
     {
     public:
-        ContentType getContentType() override;
+        ContentType getContentType() const override;
 
     private:
         const Duration duration;
@@ -140,6 +151,15 @@ namespace sys::message::domain
         QString senderUserIdValue();
         QSharedPointer<Content> contentValue();
         QString chatSessionIdValue();
+
+        bool operator==(const Message& other) const
+        {
+            return messageId == other.messageId &&
+                chatSessionId == other.chatSessionId &&
+                seqInChatSession == other.seqInChatSession &&
+                sendingInfo == other.sendingInfo &&
+                (*content) == *(other.content);
+        }
 
     private:
         Message(const QString& messageId, const QString& chatSessionId, int seqInChatSession,

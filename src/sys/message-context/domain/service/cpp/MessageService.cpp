@@ -10,7 +10,7 @@
 
 namespace sys::message::domain
 {
-    void MessageService::sendTextMessage(const QString& chatSessionId, const QString& text)
+    QSharedPointer<Message> MessageService::sendTextMessage(const QString& chatSessionId, const QString& text)
     {
         if (!TextContent::checkText(text))
         {
@@ -24,5 +24,6 @@ namespace sys::message::domain
                                                     result.seqInChatSession, result.sendTime,
                                                     currentUserId, text);
         messageRepository->save(message);
+        return message;
     }
 }

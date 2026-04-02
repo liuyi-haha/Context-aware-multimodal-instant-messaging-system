@@ -16,5 +16,6 @@ namespace sys::message::port
 
     public:
         virtual void save(const QSharedPointer<domain::Message>) = 0;
+        virtual QSharedPointer<domain::Message> of(const QString& messageId) = 0;
     };
 }

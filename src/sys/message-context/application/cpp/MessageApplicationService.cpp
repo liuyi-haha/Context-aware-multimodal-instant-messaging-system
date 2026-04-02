@@ -55,5 +55,35 @@ namespace sys
 
             return messages;
         }
+
+        contract::message::SendTextMessageResponse MessageApplicationService::sendTextMessage(
+            const QString& chatSessionId, const QString& text)
+        {
+            contract::message::SendTextMessageResponse response;
+            checkConfigAndSetResponse(response);
+            try
+            {
+                auto message = messageService->sendTextMessage(chatSessionId, text);
+                response.messageView = messageViewAssembler->assemble(message);
+                response.success = true;
+            }
+            catch (std::exception& ex)
+            {
+                response.success = false;
+                response.errMsg = QString::fromUtf8(ex.what());
+            }
+            return response;
+        }
+
+        bool MessageApplicationService::checkConfigAndSetResponse(contract::BaseResponse& response)
+        {
+            if (messageViewAssembler == nullptr || messageService == nullptr)
+            {
+                response.success = false;
+                response.errMsg = "MessageApplicationService is not properly configured";
+                return false;
+            }
+            return true;
+        }
     }
 } // sys

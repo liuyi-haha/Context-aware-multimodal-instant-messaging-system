@@ -7,11 +7,14 @@
 #include "SenderValidator.h"
 #include "sys/message-context/port/client/BackendClient.h"
 #include "sys/message-context/port/repository/MessageRepository.h"
+#include <QObject>
 
 namespace sys::message::domain
 {
-    class MessageService
+    class MessageService : public QObject
     {
+        Q_OBJECT
+
     public:
         MessageService() = default;
 
@@ -24,7 +27,7 @@ namespace sys::message::domain
         }
 
     public:
-        void sendTextMessage(const QString& chatSessionId, const QString& text);
+        QSharedPointer<Message> sendTextMessage(const QString& chatSessionId, const QString& text);
 
     private:
         port::BackendClient* backendClient = QInjection::Inject;

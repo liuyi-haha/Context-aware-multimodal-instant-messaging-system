@@ -12,5 +12,6 @@ namespace tests::message::mock
     {
     public:
         MOCK_METHOD(void, save, (const QSharedPointer<sys::message::domain::Message>), (override));
+        MOCK_METHOD(QSharedPointer<sys::message::domain::Message>, of, (const QString& messageId), (override));
     };
 }

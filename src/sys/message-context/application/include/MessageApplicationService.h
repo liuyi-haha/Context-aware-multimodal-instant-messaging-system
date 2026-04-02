@@ -6,7 +6,11 @@
 #include <QDateTime>
 #include <QString>
 
+#include "dependencyinjector.h"
+#include "MessageViewAssembler.h"
 #include "contract/system-provider/message-context-provider/MessageView.h"
+#include "contract/system-provider/message-context-provider/SendTextMessage.h"
+#include "sys/message-context/domain/service/include/MessageService.h"
 
 namespace sys::message::application
 {
@@ -32,6 +36,13 @@ namespace sys::message::application
 
     public:
         MessageApplicationService() = default;
+
+        MessageApplicationService(MessageViewAssembler* messageAssembler, domain::MessageService* messageService)
+            : messageViewAssembler(messageAssembler),
+              messageService(messageService)
+        {
+        }
+
         QHash<QString, LastMessageInfo> getChatSessionLastMessageInfos(
             const QSet<int>& chatSessionIds);
 
@@ -39,5 +50,13 @@ namespace sys::message::application
         QList<contract::message::MessageView> getMessagesBefore(const QString& chatSessionId, int count,
                                                                 const std::optional<QString>& beforeMsgId =
                                                                     std::nullopt);
+        contract::message::SendTextMessageResponse sendTextMessage(const QString& chatSessionId, const QString& text);
+
+    private:
+        MessageViewAssembler* messageViewAssembler = QInjection::Inject;
+        domain::MessageService* messageService = QInjection::Inject;
+
+    private:
+        bool checkConfigAndSetResponse(contract::BaseResponse& response);
     };
 }

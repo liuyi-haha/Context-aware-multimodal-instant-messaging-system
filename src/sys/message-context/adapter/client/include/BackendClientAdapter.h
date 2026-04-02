@@ -9,12 +9,6 @@
 
 namespace sys::message::adapter
 {
-    class BackendClientAdapter : public port::BackendClient
-    {
-    public:
-        SendTextMessageResult sendTextMessage(const QString& chatSessionId, const QString& text) override;
-    };
-
     class IChatApiGateway
     {
     public:
@@ -27,5 +21,21 @@ namespace sys::message::adapter
     public:
         OpenAPIChat::OAIChatSendTextMessage_200_response sendTextMessage(
             const OpenAPIChat::OAIChatSendTextMessage_request& request) override;
+    };
+
+    class BackendClientAdapter : public port::BackendClient
+    {
+    public:
+        BackendClientAdapter() = default;
+
+        explicit BackendClientAdapter(IChatApiGateway* chatApiGateway)
+            : chatApiGateway(chatApiGateway)
+        {
+        }
+
+        SendTextMessageResult sendTextMessage(const QString& chatSessionId, const QString& text) override;
+
+    private:
+        IChatApiGateway* chatApiGateway = new ChatApiGatewayAdapter();
     };
 }
