@@ -26,6 +26,7 @@
 #include "sys/relation-context/domain/object/include/FriendApplication.h"
 #include "sys/relation-context/port/repository/include/FriendApplicationRepository.h"
 #include "sys/starter/include/AppStarter.h"
+#include "ui/main-widgets/include/MainWindow.h"
 #include "ui/user-widgets/include/RegisterWidget.h"
 
 void seedApplication(const QString& friendApplicationId,
@@ -82,11 +83,11 @@ int main(int argc, char* argv[])
     // 设置userId和token，模拟用户已登录
     sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token");
     sys::starter::AppStarter::bootstrap();
-    //setDatas();
+    setDatas();
     //auto w = new ui::main_widgets::MainWindow();
-    //auto w = new ui::main_widgets::MainWindow();
+    auto w = new ui::main_widgets::MainWindow();
     // auto w = new ui::user_widgets::UserIdDisplayWidget("dfaffadfafe");
-    //w->show();
+    w->show();
     return a.exec();
 }
 

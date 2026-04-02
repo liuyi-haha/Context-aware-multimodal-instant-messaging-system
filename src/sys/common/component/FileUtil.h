@@ -9,6 +9,8 @@
 #include <QStandardPaths>
 #include <QString>
 
+#include "Database.h"
+
 namespace sys::common::component
 {
     class FileUtil
@@ -66,6 +68,7 @@ namespace sys::common::component
             return FILE_PATH + "/" + fileId;
         }
 
-        const QString FILE_PATH = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/file";
+    private:
+        const QString FILE_PATH = DATA_PATH + "/file";
     };
 }

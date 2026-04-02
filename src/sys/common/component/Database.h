@@ -1,12 +1,16 @@
 #pragma once
 #include <QSqlDatabase>
 #include <qstandardpaths.h>
+#include <QDebug>
 
 #include "sys/common/component/UserCredentialManager.h"
 #include "sys/common/exception/InfraExcception.h"
 
 namespace sys::common::component
 {
+    //static QString DATA_PATH = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    static QString DATA_PATH = "F:/GraduationProject/data";
+
     class ICommonDatabase
     {
     public:
@@ -32,10 +36,10 @@ namespace sys::common::component
         CommonDatabase()
         {
             database = QSqlDatabase::addDatabase("QSQLITE", "common-db-connection");
-            const QString dataPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-            database.setDatabaseName(dataPath + "/common.db");
+            database.setDatabaseName(DATA_PATH + "/common.db");
             if (!database.open())
             {
+                qDebug() << "数据库连接失败";
                 throw core::InfraException("数据库连接失败");
             }
         }
@@ -74,11 +78,11 @@ namespace sys::common::component
             const QString currentUserId = UserCredentialManager::instance().getCurrentUserId();
             const QString connectionName = QString("private-db-") + currentUserId;
             database = QSqlDatabase::addDatabase("QSQLITE", connectionName);
-
-            const QString dataPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-            database.setDatabaseName(dataPath + currentUserId + ".db");
+            QString dataPath = DATA_PATH + "/" + currentUserId;
+            database.setDatabaseName(dataPath + "private.db");
             if (!database.open())
             {
+                qDebug() << "数据库连接失败";
                 throw core::InfraException("数据库连接失败");
             }
         }
