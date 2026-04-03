@@ -60,24 +60,24 @@ void seedApplication(const QString& friendApplicationId,
     friendApplicationRepository->save(application);
 }
 
-void setDatas()
-{
-    seedApplication("FA-MIX-5", "100000001", "100000002", "v5", "self_pending",
-                    QDateTime(QDate(2026, 3, 30), QTime(15, 0, 0), Qt::UTC),
-                    sys::relation::domain::ApplicationStatus::Pending);
-    seedApplication("FA-MIX-4", "100000003", "100000001", "vfour", "other_pending",
-                    QDateTime(QDate(2026, 3, 30), QTime(14, 0, 0), Qt::UTC),
-                    sys::relation::domain::ApplicationStatus::Pending);
-    seedApplication("FA-MIX-3", "100000001", "100000004", "v3", "self_accepted",
-                    QDateTime(QDate(2026, 3, 30), QTime(13, 0, 0), Qt::UTC),
-                    sys::relation::domain::ApplicationStatus::Accepted);
-    seedApplication("FA-MIX-2", "100000002", "100000001", "v2", "other_rejected",
-                    QDateTime(QDate(2026, 3, 30), QTime(12, 0, 0), Qt::UTC),
-                    sys::relation::domain::ApplicationStatus::Rejected);
-    seedApplication("FA-MIX-1", "100000004", "100000001", "v1", "other_accepted",
-                    QDateTime(QDate(2026, 3, 30), QTime(11, 0, 0), Qt::UTC),
-                    sys::relation::domain::ApplicationStatus::Accepted);
-}
+// void setDatas()
+// {
+//     seedApplication("FA-MIX-5", "100000001", "100000002", "v5", "self_pending",
+//                     QDateTime(QDate(2026, 3, 30), QTime(15, 0, 0), Qt::UTC),
+//                     sys::relation::domain::ApplicationStatus::Pending);
+//     seedApplication("FA-MIX-4", "100000003", "100000001", "vfour", "other_pending",
+//                     QDateTime(QDate(2026, 3, 30), QTime(14, 0, 0), Qt::UTC),
+//                     sys::relation::domain::ApplicationStatus::Pending);
+//     seedApplication("FA-MIX-3", "100000001", "100000004", "v3", "self_accepted",
+//                     QDateTime(QDate(2026, 3, 30), QTime(13, 0, 0), Qt::UTC),
+//                     sys::relation::domain::ApplicationStatus::Accepted);
+//     seedApplication("FA-MIX-2", "100000002", "100000001", "v2", "other_rejected",
+//                     QDateTime(QDate(2026, 3, 30), QTime(12, 0, 0), Qt::UTC),
+//                     sys::relation::domain::ApplicationStatus::Rejected);
+//     seedApplication("FA-MIX-1", "100000004", "100000001", "v1", "other_accepted",
+//                     QDateTime(QDate(2026, 3, 30), QTime(11, 0, 0), Qt::UTC),
+//                     sys::relation::domain::ApplicationStatus::Accepted);
+// }
 
 
 int main(int argc, char* argv[])

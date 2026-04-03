@@ -2,6 +2,8 @@
 
 #include <QSet>
 
+#include "sys/common/exception/InfraExcception.h"
+
 namespace sys::common::adapter
 {
     UserClientAdapter::UserClientAdapter(
@@ -12,6 +14,7 @@ namespace sys::common::adapter
 
     port::UserInfo UserClientAdapter::getUser(const QString& userId)
     {
+        checkConfig();
         auto user = userApplicationService->getUser({userId});
         return port::UserInfo{
             .userId = user.userView.userId,
@@ -22,47 +25,29 @@ namespace sys::common::adapter
 
     QHash<QString, port::UserInfo> UserClientAdapter::getUsers(const QSet<QString>& userIds)
     {
-        QHash<QString, port::UserInfo> users;
+        checkConfig();
+        QHash<QString, port::UserInfo> result;
+        const auto& users = userApplicationService->getUserInfos(userIds);
+        for (auto it = users.constBegin(); it != users.constEnd(); ++it)
+        {
+            const auto& userId = it.key();
+            port::UserInfo userInfo{
+                .userId = it.value().userId,
+                .nickname = it.value().nickname,
+                .avatarFileId = it.value().avatarFileId
+            };
+            result.insert(userId, userInfo);
+        }
+
+        return result;
+    }
+
+    void UserClientAdapter::checkConfig()
+    {
         if (userApplicationService == nullptr)
         {
-            return users;
+            throw core::InfraException("UserClientAdapter依赖的UserApplicationService未配置");
         }
-
-        QSet<QString> uniqueUserIds;
-        for (const auto& userId : userIds)
-        {
-            const QString normalizedUserId = userId.trimmed();
-            if (!normalizedUserId.isEmpty())
-            {
-                uniqueUserIds.insert(normalizedUserId);
-            }
-        }
-
-        for (const auto& userId : uniqueUserIds)
-        {
-            contract::user::GetUserRequest request;
-            request.userId = userId;
-
-            const auto response = userApplicationService->getUser(request);
-            if (!response.success)
-            {
-                continue;
-            }
-
-            port::UserInfo userInfo;
-            userInfo.userId = response.userView.userId.trimmed();
-            userInfo.nickname = response.userView.nickname;
-            userInfo.avatarFileId = response.userView.avatarFileId;
-
-            if (userInfo.userId.isEmpty())
-            {
-                userInfo.userId = userId;
-            }
-
-            users.insert(userId, userInfo);
-        }
-
-        return users;
     }
 }
 

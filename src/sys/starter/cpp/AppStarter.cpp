@@ -26,13 +26,13 @@ namespace sys::starter
             return;
         }
 
-        bootstrapCommon();
 
         // Keep initialization sequence explicit and centralized.
         file::starter::FileContextStarter::bootstrap();
         notification::starter::NotificationContextStarter::bootstrap();
         auth::starter::AuthContextStarter::bootstrap();
         user::starter::UserContextStarter::bootstrap();
+        bootstrapCommon();
         message::starter::Starter::bootstarp();
         // 一定要先初始化message上下文，本来规划的是relation上下文依赖message上下文，但现状是相互依赖
         // 所以规定先初始化message上下文，初始化relation上下文后再回过头来使用set依赖注入

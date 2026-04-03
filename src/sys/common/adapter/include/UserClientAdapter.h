@@ -18,5 +18,6 @@ namespace sys::common::adapter
 
     private:
         sys::user::application::UserApplicationService* userApplicationService = nullptr;
+        void checkConfig();
     };
 }
