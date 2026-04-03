@@ -12,7 +12,7 @@ namespace ui::main_widgets
     RightStack::RightStack(QWidget* parent)
         : QStackedWidget(parent)
     {
-        setStyleSheet("background-color: white;");
+        setStyleSheet("background-color: rgb(237, 237, 237);");
 
         auto* chatPlaceholder = new QWidget();
         chatPlaceholder->setStyleSheet("background-color: white;");

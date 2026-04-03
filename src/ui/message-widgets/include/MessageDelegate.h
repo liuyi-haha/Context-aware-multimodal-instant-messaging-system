@@ -8,6 +8,7 @@
 #include <QFontMetrics>
 #include <QPainterPath>
 #include <QFont>
+#include <QTextDocument>
 
 #include "MessageListModel.h"
 
@@ -30,26 +31,28 @@ namespace ui::message_widgets
                 return QSize(0, 0);
 
             bool isMe = index.data(MessageListModel::IsMeRole).toBool();
-            int width = option.rect.width();
+            int maxBubbleWidth = option.rect.width() * MAX_BUBBLE_WIDTH_RATIO;
 
             // 计算内容区域宽度
-            int contentWidth = width - HORIZONTAL_MARGIN * 2;
-            if (!isMe)
-            {
-                contentWidth -= (AVATAR_SIZE + AVATAR_SPACING);
-            }
+            int contentWidth = calculateContentWidth(option.rect.width(), isMe);
+            int bubbleWidth = qMin(contentWidth - BUBBLE_PADDING * 2, maxBubbleWidth - BUBBLE_PADDING * 2);
 
             // 计算内容高度
-            int contentHeight = calculateContentHeight(index, contentWidth);
+            int contentHeight = calculateContentHeight(index, bubbleWidth);
+
 
             // 计算总高度
-            int totalHeight = contentHeight + VERTICAL_MARGIN * 2;
+            int totalHeight = VERTICAL_MARGIN * 2 + contentHeight;
             if (!isMe)
             {
-                totalHeight += NICKNAME_HEIGHT + ELEMENT_SPACING;
+                totalHeight += HEADER_HEIGHT + ELEMENT_SPACING;
+            }
+            else
+            {
+                totalHeight += HEADER_HEIGHT + ELEMENT_SPACING;
             }
 
-            return QSize(width, totalHeight);
+            return QSize(option.rect.width(), totalHeight);
         }
 
         void paint(QPainter* painter, const QStyleOptionViewItem& option,
@@ -59,61 +62,23 @@ namespace ui::message_widgets
                 return;
 
             painter->save();
-
-            // 绘制选中/悬停背景
-            if (option.state & QStyle::State_Selected)
-            {
-                painter->fillRect(option.rect, option.palette.highlight());
-            }
-            else if (option.state & QStyle::State_MouseOver)
-            {
-                painter->fillRect(option.rect, QColor(240, 240, 240));
-            }
+            painter->setRenderHint(QPainter::Antialiasing);
+            painter->setRenderHint(QPainter::TextAntialiasing);
 
             bool isMe = index.data(MessageListModel::IsMeRole).toBool();
-            int contentWidth = option.rect.width() - HORIZONTAL_MARGIN * 2;
-            if (!isMe)
-            {
-                contentWidth -= (AVATAR_SIZE + AVATAR_SPACING);
-            }
-
-            int contentHeight = calculateContentHeight(index, contentWidth);
-            Layout layout = calculateLayout(option, index, contentHeight);
+            Layout layout = calculateLayout(option, index, isMe);
 
             // 绘制头像
             drawAvatar(painter, layout.avatarRect, index);
 
-            // 绘制昵称（仅对方）
-            if (!isMe)
-            {
-                drawNickname(painter, layout.nicknameRect, index);
-            }
+            // 绘制头部（昵称和时间在同一行）
+            drawHeader(painter, layout.headerRect, index, isMe);
 
             // 绘制气泡背景
             drawBubble(painter, layout.bubbleRect, isMe);
 
             // 绘制内容
-            int typeValue = index.data(MessageListModel::MessageTypeRole).toInt();
-            auto messageType = static_cast<contract::message::MessageView::MessageType>(typeValue);
-
-            switch (messageType)
-            {
-            case contract::message::MessageView::MessageType::Text:
-                drawTextContent(painter, layout.contentRect, index);
-                break;
-            case contract::message::MessageView::MessageType::Image:
-                drawImageContent(painter, layout.contentRect, index);
-                break;
-            case contract::message::MessageView::MessageType::File:
-                drawFileContent(painter, layout.contentRect, index);
-                break;
-            case contract::message::MessageView::MessageType::Audio:
-                drawAudioContent(painter, layout.contentRect, index);
-                break;
-            }
-
-            // 绘制时间
-            drawTime(painter, layout.timeRect, index, isMe);
+            drawContent(painter, layout.contentRect, index);
 
             painter->restore();
         }
@@ -122,21 +87,20 @@ namespace ui::message_widgets
         struct Layout
         {
             QRect avatarRect;
-            QRect nicknameRect;
+            QRect headerRect;
             QRect bubbleRect;
             QRect contentRect;
-            QRect timeRect;
         };
 
         Layout calculateLayout(const QStyleOptionViewItem& option,
                                const QModelIndex& index,
-                               int contentHeight) const
+                               bool isMe) const
         {
             Layout layout;
-            bool isMe = index.data(MessageListModel::IsMeRole).toBool();
             int x = option.rect.x();
             int y = option.rect.y();
             int width = option.rect.width();
+            int maxBubbleWidth = width * MAX_BUBBLE_WIDTH_RATIO;
 
             // 头像位置
             if (isMe)
@@ -158,20 +122,36 @@ namespace ui::message_widgets
                 );
             }
 
-            // 气泡位置
-            int bubbleX, bubbleY;
-            int bubbleWidth = width - HORIZONTAL_MARGIN * 2 - AVATAR_SIZE - AVATAR_SPACING;
-            int bubbleHeight = contentHeight;
+            // 计算气泡宽度
+            int contentWidth = calculateContentWidth(width, isMe);
+            QString content = index.data(MessageListModel::ContentRole).toString();
+            int typeValue = index.data(MessageListModel::MessageTypeRole).toInt();
+            auto messageType = static_cast<contract::message::MessageView::MessageType>(typeValue);
 
-            if (isMe)
+            int bubbleWidth;
+            if (messageType == contract::message::MessageView::MessageType::Text)
             {
-                bubbleX = x + HORIZONTAL_MARGIN;
-                bubbleY = y + VERTICAL_MARGIN;
+                bubbleWidth = calculateTextBubbleWidth(content, maxBubbleWidth);
             }
             else
             {
-                bubbleX = x + HORIZONTAL_MARGIN + AVATAR_SIZE + AVATAR_SPACING;
-                bubbleY = y + VERTICAL_MARGIN + NICKNAME_HEIGHT + ELEMENT_SPACING;
+                bubbleWidth = qMin(contentWidth - BUBBLE_PADDING * 2, maxBubbleWidth - BUBBLE_PADDING * 2);
+            }
+            bubbleWidth += BUBBLE_PADDING * 2;
+
+            // 气泡位置
+            int bubbleX, bubbleY;
+            int bubbleHeight = calculateContentHeight(index, bubbleWidth - BUBBLE_PADDING * 2) + BUBBLE_PADDING * 2;
+
+            if (isMe)
+            {
+                bubbleX = layout.avatarRect.left() - AVATAR_SPACING - bubbleWidth;
+                bubbleY = y + VERTICAL_MARGIN + HEADER_HEIGHT + ELEMENT_SPACING;
+            }
+            else
+            {
+                bubbleX = layout.avatarRect.right() + AVATAR_SPACING;
+                bubbleY = y + VERTICAL_MARGIN + HEADER_HEIGHT + ELEMENT_SPACING;
             }
 
             layout.bubbleRect = QRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight);
@@ -179,22 +159,65 @@ namespace ui::message_widgets
                 BUBBLE_PADDING, BUBBLE_PADDING, -BUBBLE_PADDING, -BUBBLE_PADDING
             );
 
-            // 昵称位置（仅对方）
-            if (!isMe)
+            // 头部位置（昵称和时间）
+            if (isMe)
             {
-                layout.nicknameRect = QRect(
+                layout.headerRect = QRect(
                     bubbleX,
                     y + VERTICAL_MARGIN,
                     bubbleWidth,
-                    NICKNAME_HEIGHT
+                    HEADER_HEIGHT
+                );
+            }
+            else
+            {
+                layout.headerRect = QRect(
+                    bubbleX,
+                    y + VERTICAL_MARGIN,
+                    bubbleWidth,
+                    HEADER_HEIGHT
                 );
             }
 
-            // 时间位置
-            int timeY = layout.bubbleRect.bottom() + ELEMENT_SPACING;
-            layout.timeRect = QRect(bubbleX, timeY, bubbleWidth, TIME_HEIGHT);
-
             return layout;
+        }
+
+        int calculateContentWidth(int totalWidth, bool isMe) const
+        {
+            int contentWidth = totalWidth - HORIZONTAL_MARGIN * 2 - AVATAR_SIZE - AVATAR_SPACING;
+            if (isMe)
+            {
+                contentWidth = totalWidth - HORIZONTAL_MARGIN * 2 - AVATAR_SIZE - AVATAR_SPACING;
+            }
+            return contentWidth;
+        }
+
+        int calculateTextBubbleWidth(const QString& text, int maxWidth) const
+        {
+            QFont font;
+            QFontMetrics fm(font);
+
+            // 按行分割文本
+            QStringList lines = text.split('\n');
+            int maxLineWidth = 0;
+
+            for (const QString& line : lines)
+            {
+                int lineWidth = fm.horizontalAdvance(line);
+                if (lineWidth > maxLineWidth)
+                    maxLineWidth = lineWidth;
+            }
+
+            // 气泡宽度 = 最长行宽度 + 内边距
+            int bubbleWidth = maxLineWidth + BUBBLE_PADDING * 2;
+
+            // 限制最大宽度
+            bubbleWidth = qMin(bubbleWidth, maxWidth);
+
+            // 确保最小宽度
+            bubbleWidth = qMax(bubbleWidth, MIN_BUBBLE_WIDTH);
+
+            return bubbleWidth;
         }
 
         int calculateContentHeight(const QModelIndex& index, int contentWidth) const
@@ -207,9 +230,8 @@ namespace ui::message_widgets
             case contract::message::MessageView::MessageType::Text:
                 {
                     QString content = index.data(MessageListModel::ContentRole).toString();
-                    int textWidth = contentWidth - BUBBLE_PADDING * 2;
-                    int textHeight = calculateTextHeight(content, textWidth);
-                    return textHeight + BUBBLE_PADDING * 2;
+                    int textHeight = calculateTextHeight(content, contentWidth);
+                    return textHeight;
                 }
             case contract::message::MessageView::MessageType::Image:
                 return calculateImageHeight(contentWidth);
@@ -226,18 +248,15 @@ namespace ui::message_widgets
             if (text.isEmpty())
                 return 0;
 
-            QFont font;
-            QFontMetrics fm(font);
-            QRect rect = fm.boundingRect(
-                QRect(0, 0, width, 0),
-                Qt::TextWordWrap,
-                text);
-            return rect.height();
+            QTextDocument doc;
+            doc.setPlainText(text);
+            doc.setTextWidth(width);
+            return qCeil(doc.size().height());
         }
 
         int calculateImageHeight(int width) const
         {
-            return qMin(MAX_IMAGE_HEIGHT, width * 3 / 4);
+            return qMin(MAX_IMAGE_HEIGHT, width);
         }
 
         void drawAvatar(QPainter* painter, const QRect& rect, const QModelIndex& index) const
@@ -271,17 +290,42 @@ namespace ui::message_widgets
             painter->restore();
         }
 
-        void drawNickname(QPainter* painter, const QRect& rect, const QModelIndex& index) const
+        void drawHeader(QPainter* painter, const QRect& rect, const QModelIndex& index, bool isMe) const
         {
-            QString nickname = index.data(MessageListModel::SenderNicknameRole).toString();
-
             painter->save();
+
             QFont font = painter->font();
-            font.setBold(true);
             font.setPointSize(font.pointSize() - 1);
             painter->setFont(font);
-            painter->setPen(QColor(100, 100, 100));
-            painter->drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, nickname);
+
+            // 设置浅色字体
+            painter->setPen(QColor(150, 150, 150));
+
+            QString nickname = index.data(MessageListModel::SenderNicknameRole).toString();
+            QDateTime timestamp = index.data(MessageListModel::TimestampRole).toDateTime();
+            QString timeStr = formatTime(timestamp);
+
+            if (isMe)
+            {
+                // 我的消息：时间在左，昵称在右（或者只显示时间）
+                QString headerText = timeStr;
+                if (!nickname.isEmpty())
+                {
+                    headerText = timeStr + "  " + nickname;
+                }
+                painter->drawText(rect, Qt::AlignRight | Qt::AlignVCenter, headerText);
+            }
+            else
+            {
+                // 对方消息：昵称在左，时间在右
+                QString headerText = nickname;
+                if (!timeStr.isEmpty())
+                {
+                    headerText = nickname + "  " + timeStr;
+                }
+                painter->drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, headerText);
+            }
+
             painter->restore();
         }
 
@@ -290,12 +334,48 @@ namespace ui::message_widgets
             painter->save();
             painter->setRenderHint(QPainter::Antialiasing);
 
-            QColor bubbleColor = isMe ? QColor(220, 248, 198) : QColor(255, 255, 255);
+            QColor bubbleColor = isMe ? QColor(185, 225, 145) : QColor(255, 255, 255);
             painter->setBrush(bubbleColor);
             painter->setPen(QPen(QColor(220, 220, 220), 1));
-            painter->drawRoundedRect(rect, BUBBLE_RADIUS, BUBBLE_RADIUS);
+            // 绘制气泡，根据左右位置决定圆角
+            if (isMe)
+            {
+                // 我的消息：右上角更圆
+                QPainterPath path;
+                path.addRoundedRect(rect, BUBBLE_RADIUS, BUBBLE_RADIUS);
+                painter->drawPath(path);
+            }
+            else
+            {
+                // 对方消息：左上角更圆
+                QPainterPath path;
+                path.addRoundedRect(rect, BUBBLE_RADIUS, BUBBLE_RADIUS);
+                painter->drawPath(path);
+            }
 
             painter->restore();
+        }
+
+        void drawContent(QPainter* painter, const QRect& rect, const QModelIndex& index) const
+        {
+            int typeValue = index.data(MessageListModel::MessageTypeRole).toInt();
+            auto messageType = static_cast<contract::message::MessageView::MessageType>(typeValue);
+
+            switch (messageType)
+            {
+            case contract::message::MessageView::MessageType::Text:
+                drawTextContent(painter, rect, index);
+                break;
+            case contract::message::MessageView::MessageType::Image:
+                drawImageContent(painter, rect, index);
+                break;
+            case contract::message::MessageView::MessageType::File:
+                drawFileContent(painter, rect, index);
+                break;
+            case contract::message::MessageView::MessageType::Audio:
+                drawAudioContent(painter, rect, index);
+                break;
+            }
         }
 
         void drawTextContent(QPainter* painter, const QRect& rect, const QModelIndex& index) const
@@ -304,7 +384,13 @@ namespace ui::message_widgets
 
             painter->save();
             painter->setPen(Qt::black);
-            painter->drawText(rect, Qt::TextWordWrap, content);
+
+            QTextDocument doc;
+            doc.setPlainText(content);
+            doc.setTextWidth(rect.width());
+
+            painter->translate(rect.topLeft());
+            doc.drawContents(painter);
             painter->restore();
         }
 
@@ -405,28 +491,6 @@ namespace ui::message_widgets
             painter->restore();
         }
 
-        void drawTime(QPainter* painter, const QRect& rect, const QModelIndex& index, bool isMe) const
-        {
-            QDateTime timestamp = index.data(MessageListModel::TimestampRole).toDateTime();
-
-            painter->save();
-            QFont font = painter->font();
-            font.setPointSize(font.pointSize() - 1);
-            painter->setFont(font);
-            painter->setPen(QColor(150, 150, 150));
-
-            QString timeStr = formatTime(timestamp);
-            if (isMe)
-            {
-                painter->drawText(rect, Qt::AlignRight | Qt::AlignVCenter, timeStr);
-            }
-            else
-            {
-                painter->drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, timeStr);
-            }
-            painter->restore();
-        }
-
         QString formatFileSize(qint64 size) const
         {
             if (size < 1024)
@@ -460,12 +524,13 @@ namespace ui::message_widgets
         static constexpr int AVATAR_SIZE = 40;
         static constexpr int AVATAR_SPACING = 8;
         static constexpr int BUBBLE_PADDING = 10;
-        static constexpr int NICKNAME_HEIGHT = 20;
-        static constexpr int TIME_HEIGHT = 16;
-        static constexpr int ELEMENT_SPACING = 4;
+        static constexpr int HEADER_HEIGHT = 20;
+        static constexpr int ELEMENT_SPACING = 30;
         static constexpr int BUBBLE_RADIUS = 8;
         static constexpr int MAX_IMAGE_HEIGHT = 200;
         static constexpr int FILE_HEIGHT = 60;
         static constexpr int AUDIO_HEIGHT = 50;
+        static constexpr int MIN_BUBBLE_WIDTH = 60;
+        static constexpr float MAX_BUBBLE_WIDTH_RATIO = 0.6f; // 气泡最大宽度为整个Item宽度的60%
     };
 }

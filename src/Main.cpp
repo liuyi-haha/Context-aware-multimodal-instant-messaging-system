@@ -83,8 +83,8 @@ void seedApplication(const QString& friendApplicationId,
 int main(int argc, char* argv[])
 {
     // 设置currentUserId，模拟用户登录状态
-    sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token", "Mock User",
-                                                                     "avatar_file_id", "description",
+    sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token", "刘奕",
+                                                                     "刘奕的头像", "description",
                                                                      "1234567890");
     QApplication a(argc, argv);
 

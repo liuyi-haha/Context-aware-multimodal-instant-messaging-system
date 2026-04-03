@@ -6,7 +6,6 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QTextEdit>
-
 #include "ui/auth-widgets/include/LoginWidget.h"
 
 namespace ui::message_widgets
@@ -29,25 +28,25 @@ namespace ui::message_widgets
             m_voiceBtn = new QPushButton(this);
             m_voiceBtn->setToolTip("发送语音");
             m_voiceBtn->setFixedSize(32, 32);
-            m_voiceBtn->setIcon(QIcon(":/icons/voice.png"));
+            m_voiceBtn->setIcon(QIcon(":/icons/message/voice.png"));
             m_voiceBtn->setIconSize(QSize(24, 24));
 
             m_imageBtn = new QPushButton(this);
             m_imageBtn->setToolTip("发送图片");
             m_imageBtn->setFixedSize(32, 32);
-            m_imageBtn->setIcon(QIcon(":/icons/image.png"));
+            m_imageBtn->setIcon(QIcon(":/icons/message/photo.png"));
             m_imageBtn->setIconSize(QSize(24, 24));
 
             m_fileBtn = new QPushButton(this);
             m_fileBtn->setToolTip("发送文件");
             m_fileBtn->setFixedSize(32, 32);
-            m_fileBtn->setIcon(QIcon(":/icons/file.png"));
+            m_fileBtn->setIcon(QIcon(":/icons/message/document.png"));
             m_fileBtn->setIconSize(QSize(24, 24));
 
             m_smartReplyBtn = new QPushButton(this);
             m_smartReplyBtn->setToolTip("智能回复");
             m_smartReplyBtn->setFixedSize(32, 32);
-            m_smartReplyBtn->setIcon(QIcon(":/icons/smart_reply.png"));
+            m_smartReplyBtn->setIcon(QIcon(":/icons/message/smart_reply.png"));
             m_smartReplyBtn->setIconSize(QSize(24, 24));
 
             m_sendBtn = new QPushButton("发送", this);

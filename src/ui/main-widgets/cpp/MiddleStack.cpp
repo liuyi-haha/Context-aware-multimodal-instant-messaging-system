@@ -12,21 +12,21 @@ namespace ui::main_widgets
     {
         setMinimumWidth(300);
         setMaximumWidth(500);
+        setStyleSheet("background-color: rgb(247, 247, 247);");
     }
 
     void MiddleStack::createPages()
     {
-        auto* robotPlaceholder = new QWidget();
-        robotPlaceholder->setStyleSheet("background-color: white;");
+        auto* robotPlaceholder = new QWidget(this);
 
-        m_chatSessionList = new ui::relation_widgets::ChatSessionList();
-        m_friendApplicationList = new ui::relation_widgets::FriendApplicationList();
 
-        auto* friendPlaceholder = new QWidget();
-        friendPlaceholder->setStyleSheet("background-color: white;");
+        m_chatSessionList = new ui::relation_widgets::ChatSessionList(this);
+        m_friendApplicationList = new ui::relation_widgets::FriendApplicationList(this);
 
-        auto* groupPlaceholder = new QWidget();
-        groupPlaceholder->setStyleSheet("background-color: white;");
+        auto* friendPlaceholder = new QWidget(this);
+
+
+        auto* groupPlaceholder = new QWidget(this);
 
         addWidget(robotPlaceholder);
         addWidget(m_chatSessionList); // index : MessagePage

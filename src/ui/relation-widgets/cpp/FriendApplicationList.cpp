@@ -354,7 +354,6 @@ namespace ui::relation_widgets
         setObjectName(QStringLiteral("friendApplicationList"));
         setStyleSheet(
             "#friendApplicationList {"
-            " background-color: #f5f5f5;"
             " border: none;"
             "}"
             "QListView {"

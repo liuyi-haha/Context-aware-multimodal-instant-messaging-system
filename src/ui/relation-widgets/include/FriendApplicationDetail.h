@@ -26,7 +26,6 @@ namespace ui::relation_widgets
 
     protected:
         void resizeEvent(QResizeEvent* event) override;
-        void paintEvent(QPaintEvent* event) override; // 添加paintEvent确保背景色生效
 
     private:
         static void applyStatusStyle(QLabel* statusLabel, contract::relation::FriendApplicationView::Status status);

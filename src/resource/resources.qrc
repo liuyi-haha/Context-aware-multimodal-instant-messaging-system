@@ -10,5 +10,10 @@
         <file>icons/relation/group_nav.png</file>
         <file>icons/user/search.png</file>
         <file>icons/smart/chat_robot.png</file>
+        <file>icons/message/voice.png</file>
+        <file>icons/message/photo.png</file>
+        <file>icons/message/document.png</file>
+        <file>icons/message/smart_reply.png</file>
+
     </qresource>
 </RCC>

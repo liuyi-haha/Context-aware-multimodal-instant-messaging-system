@@ -91,14 +91,6 @@ namespace ui::relation_widgets
         cardWidget->setObjectName("cardWidget");
     }
 
-    void FriendApplicationDetail::paintEvent(QPaintEvent* event)
-    {
-        // 确保背景色被绘制
-        QPainter painter(this);
-        painter.fillRect(rect(), QColor(237, 237, 237));
-        QWidget::paintEvent(event);
-    }
-
     void FriendApplicationDetail::createWidgets()
     {
         cardWidget = new QWidget(this);

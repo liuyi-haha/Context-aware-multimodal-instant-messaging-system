@@ -7,6 +7,8 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QListView>
+#include <QAbstractItemView>
+#include <QGraphicsView>
 #include "MessageListModel.h"
 #include "MessageDelegate.h"
 #include "sys/message-context/application/include/MessageApplicationService.h"
@@ -18,21 +20,30 @@ namespace ui::message_widgets
         Q_OBJECT
 
     public:
-        explicit MessageListWidget(QWidget* parent = nullptr)
-            : QWidget(parent)
+        explicit MessageListWidget(const QString& chatSessionId, QWidget* parent = nullptr)
+            : m_chatSessionId(chatSessionId),
+              QWidget(parent)
         {
             // 创建布局
             QVBoxLayout* layout = new QVBoxLayout(this);
             layout->setContentsMargins(0, 0, 0, 0);
 
             // 创建列表视图
+            // listView->setSelectionMode(QAbstractItemView::SingleSelection);
+            // listView->setMouseTracking(true);
+            // listView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+            // listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            // listView->setUniformItemSizes(true);
+
+
             listView = new QListView(this);
+            listView->setSelectionMode(QAbstractItemView::NoSelection);
             listView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
             listView->setSelectionBehavior(QAbstractItemView::SelectRows);
-            listView->setMouseTracking(true);
+            listView->setMouseTracking(false);
+            // 确保整个 item 都重绘
             listView->setStyleSheet(R"(
             QListView {
-                background-color: #F5F5F5;
                 border: none;
                 outline: none;
             }
@@ -56,7 +67,7 @@ namespace ui::message_widgets
             // 异步加载消息
             QtConcurrent::run([this]()-> QList<contract::message::MessageView>
             {
-                return messageApplicationService->getRecentMessages(chatSessionId, 20);
+                return messageApplicationService->getRecentMessages(m_chatSessionId, 20);
             }).then(this, [this](const QList<contract::message::MessageView>& views)
             {
                 m_model->setViews(views);
@@ -144,7 +155,7 @@ namespace ui::message_widgets
         QListView* listView;
         MessageListModel* m_model;
         MessageDelegate* m_delegate;
+        QString m_chatSessionId;
         sys::message::application::MessageApplicationService* messageApplicationService = QInjection::Inject;
-        QString chatSessionId;
     };
 }

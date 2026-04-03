@@ -22,16 +22,54 @@ namespace ui::message_widgets
               m_chatSessionName(chatSessionName),
               QWidget(parent)
         {
+            m_titleBar = new ChatSessionTitleWidget(chatSessionName, this);
+            m_inputWidget = new MessageInputWidget(this);
+            m_messageList = new MessageListWidget(m_chatSessionId, this);
+            initLayout();
+            initStyle();
+        }
+
+    private:
+        void initStyle()
+        {
+            setStyleSheet(
+                "MessagePanel {"
+                " border: none;"
+                "}"
+                " #chatSessionTitleWidget, MessageListWidget, MessageInputWidget {"
+                " background-color: rgb(237, 237, 237);"
+                " border: none;"
+                " outline: none;"
+                "}"
+                "QScrollBar:vertical {"
+                " background: transparent;"
+                " width: 6px;"
+                " margin: 4px 2px 4px 0px;"
+                "}"
+                "QScrollBar::handle:vertical {"
+                " background: rgba(0, 0, 0, 45);"
+                " border-radius: 3px;"
+                " min-height: 20px;"
+                "}"
+                "QScrollBar::handle:vertical:hover {"
+                " background: rgba(0, 0, 0, 70);"
+                "}"
+                "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,"
+                "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
+                " background: transparent;"
+                " height: 0px;"
+                "}"
+            );
+        }
+
+        void initLayout()
+        {
             QVBoxLayout* mainLayout = new QVBoxLayout(this);
             mainLayout->setContentsMargins(0, 0, 0, 0);
             mainLayout->setSpacing(0);
 
-            m_titleBar = new ChatSessionTitleWidget(chatSessionName, this);
-
             // 使用 QSplitter 控制消息列表和输入框
             m_splitter = new QSplitter(Qt::Vertical, this);
-            m_messageList = new MessageListWidget(m_splitter);
-            m_inputWidget = new MessageInputWidget(m_splitter);
 
             m_splitter->addWidget(m_messageList);
             m_splitter->addWidget(m_inputWidget);
@@ -42,7 +80,7 @@ namespace ui::message_widgets
 
             // 设置输入框最小/最大高度
             m_inputWidget->setMinimumHeight(100);
-            m_inputWidget->setMaximumHeight(200);
+            m_inputWidget->setMaximumHeight(400);
 
             // 允许用户拖拽调节
             m_splitter->setChildrenCollapsible(false);
