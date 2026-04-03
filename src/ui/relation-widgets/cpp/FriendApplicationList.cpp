@@ -16,11 +16,8 @@
 
 namespace ui::relation_widgets
 {
-    FriendApplicationListModel::FriendApplicationListModel(
-        FileApplicationService* fileApplicationService,
-        QObject* parent)
-        : QAbstractListModel(parent),
-          fileApplicationService(fileApplicationService)
+    FriendApplicationListModel::FriendApplicationListModel(QObject* parent)
+        : QAbstractListModel(parent)
     {
     }
 
@@ -330,7 +327,7 @@ namespace ui::relation_widgets
     FriendApplicationList::FriendApplicationList(QWidget* parent)
         : QWidget(parent),
           listView(new QListView(this)),
-          listModel(new FriendApplicationListModel())
+          listModel(new FriendApplicationListModel(this))
     {
         initLayout();
         initStyle();

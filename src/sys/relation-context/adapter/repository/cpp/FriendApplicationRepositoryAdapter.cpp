@@ -10,14 +10,14 @@ namespace sys::relation::adapter
 {
     namespace
     {
-        void ensureFriendApplicationTableReady(QSqlDatabase* db)
+        void ensureFriendApplicationTableReady(const QSqlDatabase& db)
         {
-            if (db == nullptr || !db->isOpen())
+            if (!db.isOpen())
             {
                 throw core::InfraException("数据库连接失败");
             }
 
-            QSqlQuery query(*db);
+            QSqlQuery query(db);
             if (!query.exec(
                 "CREATE TABLE IF NOT EXISTS friend_application ("
                 "id TEXT PRIMARY KEY,"
@@ -117,10 +117,10 @@ namespace sys::relation::adapter
     QList<QSharedPointer<domain::FriendApplication>> FriendApplicationRepositoryAdapter::ofApplicantUserId(
         const QString& applicantUserId)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureFriendApplicationTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT id, applicant_user_id, target_user_id, verification_message, recipient_remark, apply_time, application_status "
             "FROM friend_application WHERE applicant_user_id = :applicant_user_id "
@@ -143,10 +143,10 @@ namespace sys::relation::adapter
     QList<QSharedPointer<domain::FriendApplication>> FriendApplicationRepositoryAdapter::ofTargetUserId(
         const QString& ofTargetUserId)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureFriendApplicationTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT id, applicant_user_id, target_user_id, verification_message, recipient_remark, apply_time, application_status "
             "FROM friend_application WHERE target_user_id = :target_user_id "
@@ -171,10 +171,10 @@ namespace sys::relation::adapter
         const QString& targetUserId,
         const domain::ApplicationStatus status)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureFriendApplicationTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT id, applicant_user_id, target_user_id, verification_message, recipient_remark, apply_time, application_status "
             "FROM friend_application "
@@ -201,10 +201,10 @@ namespace sys::relation::adapter
 
     QSharedPointer<domain::FriendApplication> FriendApplicationRepositoryAdapter::of(const QString& friendApplicationId)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureFriendApplicationTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT id, applicant_user_id, target_user_id, verification_message, recipient_remark, apply_time, application_status "
             "FROM friend_application WHERE id = :id LIMIT 1");
@@ -230,10 +230,10 @@ namespace sys::relation::adapter
             return;
         }
 
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureFriendApplicationTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "INSERT OR REPLACE INTO friend_application ("
             "id, applicant_user_id, target_user_id, verification_message, recipient_remark, apply_time, application_status"

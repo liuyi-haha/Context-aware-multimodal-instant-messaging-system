@@ -40,7 +40,7 @@ namespace sys::relation::adapter
         QString participantId;
         QString chatSessionId;
         QString userId;
-        int participantRole;
+        int participantRole = 0;
         std::optional<QString> remark;
 
         QSharedPointer<domain::Participant> toModel()
@@ -67,14 +67,14 @@ namespace sys::relation::adapter
         }
     };
 
-    void ensureParticipantTableReady(QSqlDatabase* db)
+    void ensureParticipantTableReady(const QSqlDatabase& db)
     {
-        if (db == nullptr || !db->isOpen())
+        if (!db.isOpen())
         {
             throw core::InfraException("数据库连接失败");
         }
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         if (!query.exec(
             "CREATE TABLE IF NOT EXISTS participant ("
             "participant_id TEXT PRIMARY KEY,"
@@ -102,10 +102,10 @@ namespace sys::relation::adapter
     void ParticipantRepositoryAdapter::saveAll(
         const QVector<QSharedPointer<domain::Participant>>& participantsToSave)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureParticipantTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "INSERT OR REPLACE INTO participant ("
             "participant_id, chat_session_id, user_id, role, remark"
@@ -135,10 +135,10 @@ namespace sys::relation::adapter
 
     QSharedPointer<domain::Participant> ParticipantRepositoryAdapter::of(const QString& participantId)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureParticipantTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT participant_id, chat_session_id, user_id, role, remark "
             "FROM participant WHERE participant_id = :participant_id LIMIT 1");
@@ -162,10 +162,10 @@ namespace sys::relation::adapter
         const QString& privateChatSessionId,
         const QString& userId)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureParticipantTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT participant_id, chat_session_id, user_id, role, remark "
             "FROM participant "
@@ -190,10 +190,10 @@ namespace sys::relation::adapter
     QList<QSharedPointer<domain::Participant>> ParticipantRepositoryAdapter::ofChatSessionId(
         const QString& chatSessionId)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureParticipantTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT participant_id, chat_session_id, user_id, role, remark "
             "FROM participant "
@@ -219,10 +219,10 @@ namespace sys::relation::adapter
     QList<QSharedPointer<domain::Participant>> ParticipantRepositoryAdapter::ofAll(const QString& userId,
         domain::ParticipantRole role)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureParticipantTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT participant_id, chat_session_id, user_id, role, remark "
             "FROM participant "

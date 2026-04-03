@@ -26,11 +26,11 @@ namespace ui::message_widgets
             layout->setContentsMargins(0, 0, 0, 0);
 
             // 创建列表视图
-            m_listView = new QListView(this);
-            m_listView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-            m_listView->setSelectionBehavior(QAbstractItemView::SelectRows);
-            m_listView->setMouseTracking(true);
-            m_listView->setStyleSheet(R"(
+            listView = new QListView(this);
+            listView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+            listView->setSelectionBehavior(QAbstractItemView::SelectRows);
+            listView->setMouseTracking(true);
+            listView->setStyleSheet(R"(
             QListView {
                 background-color: #F5F5F5;
                 border: none;
@@ -45,21 +45,21 @@ namespace ui::message_widgets
             m_model = new MessageListModel(this);
             m_delegate = new MessageDelegate(this);
 
-            m_listView->setModel(m_model);
-            m_listView->setItemDelegate(m_delegate);
+            listView->setModel(m_model);
+            listView->setItemDelegate(m_delegate);
 
-            layout->addWidget(m_listView);
+            layout->addWidget(listView);
 
             // 连接点击信号
-            connect(m_listView, &QListView::clicked, this, &MessageListWidget::onItemClicked);
+            connect(listView, &QListView::clicked, this, &MessageListWidget::onItemClicked);
 
             // 异步加载消息
             QtConcurrent::run([this]()-> QList<contract::message::MessageView>
             {
-                return m_messageApplicationService->getRecentMessages(m_chatSessionId, 20);
+                return messageApplicationService->getRecentMessages(chatSessionId, 20);
             }).then(this, [this](const QList<contract::message::MessageView>& views)
             {
-                addMessages(views);
+                m_model->setViews(views);
             });
         }
 
@@ -80,7 +80,7 @@ namespace ui::message_widgets
         {
             if (m_model->rowCount() > 0)
             {
-                m_listView->scrollTo(m_model->index(m_model->rowCount() - 1));
+                listView->scrollTo(m_model->index(m_model->rowCount() - 1));
             }
         }
 
@@ -92,7 +92,7 @@ namespace ui::message_widgets
                 auto msg = m_model->getMessage(i);
                 if (msg.msgId == msgId)
                 {
-                    m_listView->scrollTo(m_model->index(i));
+                    listView->scrollTo(m_model->index(i));
                     break;
                 }
             }
@@ -141,10 +141,10 @@ namespace ui::message_widgets
         }
 
     private:
-        QListView* m_listView;
+        QListView* listView;
         MessageListModel* m_model;
         MessageDelegate* m_delegate;
-        sys::message::application::MessageApplicationService* m_messageApplicationService;
-        QString m_chatSessionId;
+        sys::message::application::MessageApplicationService* messageApplicationService = QInjection::Inject;
+        QString chatSessionId;
     };
 }

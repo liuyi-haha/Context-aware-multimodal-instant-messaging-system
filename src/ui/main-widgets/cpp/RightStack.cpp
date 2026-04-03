@@ -61,7 +61,7 @@ namespace ui::main_widgets
                 [this](const contract::relation::ChatSessionView& chatSessionView)
                 {
                     // 查找是MessagePanel是否存在，如果不存在则创建
-                    if (chatSessionIdToPageIndex.contains(chatSessionView.chatSessionId))
+                    if (!chatSessionIdToPageIndex.contains(chatSessionView.chatSessionId))
                     {
                         auto messagePanel = new message_widgets::MessagePanel(
                             chatSessionView.chatSessionId, chatSessionView.name, this);

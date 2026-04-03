@@ -43,15 +43,15 @@ namespace ui::message_widgets
 
         int rowCount(const QModelIndex& parent = QModelIndex()) const override
         {
-            return parent.isValid() ? 0 : m_messages.size();
+            return parent.isValid() ? 0 : views.size();
         }
 
         QVariant data(const QModelIndex& index, int role) const override
         {
-            if (!index.isValid() || index.row() >= m_messages.size())
+            if (!index.isValid() || index.row() >= views.size())
                 return QVariant();
 
-            const auto& msg = m_messages.at(index.row());
+            const auto& msg = views.at(index.row());
 
             switch (role)
             {
@@ -108,6 +108,25 @@ namespace ui::message_widgets
             };
         }
 
+        void setViews(const QList<contract::message::MessageView>& msgs)
+        {
+            beginResetModel();
+            views = msgs;
+            endResetModel();
+
+            // 异步加载头像和媒体数据
+            for (const contract::message::MessageView& msg : msgs)
+            {
+                loadAvatarAsync(msg.msgId, msg.senderInfo.avatarFileId);
+                // 如果是图片或语音消息，异步加载媒体数据
+                if (msg.messageType == contract::message::MessageView::MessageType::Image ||
+                    msg.messageType == contract::message::MessageView::MessageType::Audio)
+                {
+                    // todo @liuyi 异步加载媒体数据
+                }
+            }
+        }
+
         // 批量添加消息，自动按 sequence 升序插入
         void addMessages(const QList<contract::message::MessageView>& msgs)
         {
@@ -122,7 +141,7 @@ namespace ui::message_widgets
 
                 int insertPos = findInsertPosition(msg.sequence);
                 beginInsertRows(QModelIndex(), insertPos, insertPos);
-                m_messages.insert(insertPos, msg);
+                views.insert(insertPos, msg);
                 endInsertRows();
             }
         }
@@ -130,8 +149,8 @@ namespace ui::message_widgets
         // 获取指定索引的消息
         contract::message::MessageView getMessage(int index) const
         {
-            if (index >= 0 && index < m_messages.size())
-                return m_messages.at(index);
+            if (index >= 0 && index < views.size())
+                return views.at(index);
             return contract::message::MessageView();
         }
 
@@ -139,11 +158,11 @@ namespace ui::message_widgets
         void updateSenderAvatar(const QString& msgId, const QByteArray& avatarData)
         {
             // 找到msgId
-            for (int i = 0; i < m_messages.size(); ++i)
+            for (int i = 0; i < views.size(); ++i)
             {
-                if (m_messages[i].msgId == msgId)
+                if (views[i].msgId == msgId)
                 {
-                    m_messages[i].senderInfo.avatar = avatarData;
+                    views[i].senderInfo.avatar = avatarData;
                     // 通知视图更新
                     QModelIndex idx = index(i);
                     emit dataChanged(idx, idx, {SenderAvatarRole});
@@ -168,14 +187,14 @@ namespace ui::message_widgets
         // 根据 sequence 找到插入位置（升序）
         int findInsertPosition(int sequence) const
         {
-            for (int i = 0; i < m_messages.size(); ++i)
+            for (int i = 0; i < views.size(); ++i)
             {
-                if (m_messages[i].sequence > sequence)
+                if (views[i].sequence > sequence)
                 {
                     return i;
                 }
             }
-            return m_messages.size();
+            return views.size();
         }
 
         void loadAvatarAsync(const QString& msgId, const QString& avatarFileId)
@@ -198,7 +217,7 @@ namespace ui::message_widgets
         }
 
     private:
-        QList<contract::message::MessageView> m_messages;
+        QList<contract::message::MessageView> views;
         FileApplicationService* fileApplicationService = QInjection::Inject;
     };
 }

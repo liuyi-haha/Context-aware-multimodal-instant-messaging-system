@@ -7,14 +7,14 @@
 
 namespace sys::relation::adapter
 {
-    void ensurePrivateChatSessionTableReady(QSqlDatabase* db)
+    void ensurePrivateChatSessionTableReady(const QSqlDatabase& db)
     {
-        if (db == nullptr || !db->isOpen())
+        if (!db.isOpen())
         {
             throw core::InfraException("数据库连接失败");
         }
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         if (!query.exec(
             "CREATE TABLE IF NOT EXISTS private_chat_session ("
             "private_chat_session_id TEXT PRIMARY KEY,"
@@ -44,9 +44,9 @@ namespace sys::relation::adapter
             return;
         }
 
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "INSERT OR REPLACE INTO private_chat_session ("
             "private_chat_session_id, friend_ship_id"
@@ -65,9 +65,9 @@ namespace sys::relation::adapter
     QSharedPointer<domain::PrivateChatSession> PrivateChatSessionRepositoryAdapter::of(
         const QString& privateChatSessionId)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT private_chat_session_id, friend_ship_id "
             "FROM private_chat_session WHERE private_chat_session_id = :id LIMIT 1");
@@ -88,9 +88,9 @@ namespace sys::relation::adapter
     QSharedPointer<domain::PrivateChatSession> PrivateChatSessionRepositoryAdapter::ofFriendShipId(
         const QString& friendShipId)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT private_chat_session_id, friend_ship_id "
             "FROM private_chat_session WHERE friend_ship_id = :friend_ship_id LIMIT 1");
@@ -113,10 +113,10 @@ namespace sys::relation::adapter
     {
         if (privateChatSessionIds.isEmpty())
         {
-            return QList<QSharedPointer<domain::PrivateChatSession>>();
+            return {};
         }
 
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensurePrivateChatSessionTableReady(db);
 
         // 构建 IN 子句
@@ -127,7 +127,7 @@ namespace sys::relation::adapter
         }
         QString inClause = idList.join(",");
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         QString sql = QString(
             "SELECT private_chat_session_id, friend_ship_id "
             "FROM private_chat_session "

@@ -24,23 +24,33 @@ namespace ui::relation_widgets
 
         void setFriendApplicationView(const contract::relation::FriendApplicationView& friendApplicationView);
 
+    protected:
+        void resizeEvent(QResizeEvent* event) override;
+        void paintEvent(QPaintEvent* event) override; // 添加paintEvent确保背景色生效
+
     private:
         static void applyStatusStyle(QLabel* statusLabel, contract::relation::FriendApplicationView::Status status);
 
-        void initStyle();
         void createWidgets();
+        void initStyle();
         void createLayout();
         void setupConnections();
+        void centerCardWidget();
         void acceptCurrentApplicationAsync();
         void rejectCurrentApplicationAsync();
 
     private:
+        QWidget* cardWidget = nullptr;
         QLabel* avatarLabel = nullptr;
         QLabel* nameLabel = nullptr;
         QLabel* userIdLabel = nullptr;
         QLabel* statusLabel = nullptr;
-        QLabel* verificationLabel = nullptr;
-        QLabel* sendTimeLabel = nullptr;
+
+        QLabel* verificationTitleLabel = nullptr; // "验证消息"
+        QLabel* verificationContentLabel = nullptr; // 验证消息内容
+        QLabel* timeTitleLabel = nullptr; // "申请时间"
+        QLabel* timeContentLabel = nullptr; // 申请时间内容
+
         QPushButton* acceptButton = nullptr;
         QPushButton* rejectButton = nullptr;
 

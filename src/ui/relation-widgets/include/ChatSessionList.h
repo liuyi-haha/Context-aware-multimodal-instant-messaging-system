@@ -9,6 +9,7 @@
 #include "contract/system-provider/relation-context-provider/ChatSessionView.h"
 #include "dependencyinjector.h"
 #include "sys/file-context/application/service/include/FileApplicationService.h"
+#include "sys/relation-context/application/service/include/RelationApplicationService.h"
 
 namespace ui::relation_widgets
 {
@@ -25,9 +26,7 @@ namespace ui::relation_widgets
             UnreadCountRole
         };
 
-        explicit ChatSessionListModel(
-            FileApplicationService* fileApplicationService = QInjection::Inject,
-            QObject* parent = nullptr);
+        explicit ChatSessionListModel(QObject* parent = nullptr);
 
         int rowCount(const QModelIndex& parent) const override;
         QVariant data(const QModelIndex& index, int role) const override;
@@ -37,13 +36,14 @@ namespace ui::relation_widgets
 
     private:
         QList<contract::relation::ChatSessionView> views;
-        FileApplicationService* fileApplicationService = nullptr;
+        sys::relation::application::RelationApplicationService* relationApplicationService = QInjection::Inject;
+        FileApplicationService* fileApplicationService = QInjection::Inject;
 
     private:
-        static QString buildSessionKey(const contract::relation::ChatSessionView& view);
-        void loadAvatarAsync(const QString& sessionKey, const QString& avatarFileId);
-        void updateAvatarBySessionKey(const QString& sessionKey, const QByteArray& avatar);
+        void loadAvatarAsync(const QString& chatSessionId, const QString& avatarFileId);
+        void updateAvatarByChatSessionId(const QString& chatSessionId, const QByteArray& avatar);
     };
+
 
     class ChatSessionModelDelegate : public QStyledItemDelegate
     {
@@ -76,15 +76,13 @@ namespace ui::relation_widgets
         static void drawUnreadBadge(QPainter* painter, int unreadCount, const QRect& unreadBadgeRect);
     };
 
+
     class ChatSessionList : public QWidget
     {
         Q_OBJECT
 
     public:
-        explicit ChatSessionList(
-            const QList<contract::relation::ChatSessionView>& initialViews = {},
-            FileApplicationService* fileApplicationService = QInjection::Inject,
-            QWidget* parent = nullptr);
+        explicit ChatSessionList(QWidget* parent = nullptr);
 
     private:
         void initStyle();
@@ -94,6 +92,7 @@ namespace ui::relation_widgets
     private:
         QListView* listView = nullptr;
         ChatSessionListModel* listModel = nullptr;
+        sys::relation::application::RelationApplicationService* relationApplicationService = QInjection::Inject;
     };
 } // namespace ui::relation_widgets
 

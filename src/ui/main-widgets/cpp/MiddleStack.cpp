@@ -19,8 +19,9 @@ namespace ui::main_widgets
         auto* robotPlaceholder = new QWidget();
         robotPlaceholder->setStyleSheet("background-color: white;");
 
-        m_friendApplicationList = new ui::relation_widgets::FriendApplicationList();
         m_chatSessionList = new ui::relation_widgets::ChatSessionList();
+        m_friendApplicationList = new ui::relation_widgets::FriendApplicationList();
+
         auto* friendPlaceholder = new QWidget();
         friendPlaceholder->setStyleSheet("background-color: white;");
 
@@ -28,7 +29,7 @@ namespace ui::main_widgets
         groupPlaceholder->setStyleSheet("background-color: white;");
 
         addWidget(robotPlaceholder);
-        addWidget(m_chatSessionList);
+        addWidget(m_chatSessionList); // index : MessagePage
         addWidget(m_friendApplicationList);
         addWidget(friendPlaceholder);
         addWidget(groupPlaceholder);

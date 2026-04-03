@@ -20,9 +20,9 @@ namespace tests::user::fake
             database.open();
         }
 
-        QSqlDatabase* getDataBase() override
+        QSqlDatabase getDataBase() override
         {
-            return &database;
+            return database;
         }
 
     private:

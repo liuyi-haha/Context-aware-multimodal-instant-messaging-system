@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QSqlDatabase>
 #include <QUuid>
 
 #include "sys/common/component/Database.h"
@@ -29,9 +28,9 @@ namespace tests::message::fake
             QSqlDatabase::removeDatabase(name);
         }
 
-        QSqlDatabase* getDataBase() override
+        QSqlDatabase getDataBase() override
         {
-            return &database;
+            return database;
         }
 
     private:
@@ -39,4 +38,3 @@ namespace tests::message::fake
         QSqlDatabase database;
     };
 }
-

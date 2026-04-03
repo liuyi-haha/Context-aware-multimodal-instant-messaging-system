@@ -14,14 +14,14 @@ namespace sys::message::adapter
 {
     namespace
     {
-        void ensureMessageTableReady(QSqlDatabase* db)
+        void ensureMessageTableReady(const QSqlDatabase& db)
         {
-            if (db == nullptr || !db->isOpen())
+            if (!db.isOpen())
             {
                 throw core::InfraException("数据库连接失败");
             }
 
-            QSqlQuery query(*db);
+            QSqlQuery query(db);
             if (!query.exec(
                 "CREATE TABLE IF NOT EXISTS message ("
                 "message_id TEXT PRIMARY KEY,"
@@ -157,10 +157,10 @@ namespace sys::message::adapter
             return;
         }
 
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureMessageTableReady(db);
 
-        if (!db->transaction())
+        if (!db.transaction())
         {
             throw core::InfraException("批量保存消息失败: 无法开启事务");
         }
@@ -173,14 +173,14 @@ namespace sys::message::adapter
                 po.from(message);
                 insertMessagePO(po);
             }
-            if (!db->commit())
+            if (!db.commit())
             {
                 throw core::InfraException("批量保存消息失败: 提交事务失败");
             }
         }
         catch (...)
         {
-            db->rollback();
+            db.rollback();
             throw;
         }
     }
@@ -198,6 +198,8 @@ namespace sys::message::adapter
     QList<QSharedPointer<domain::Message>> MessageRepositoryAdapter::ofRecentMessages(const QString& chatSessionId,
         int count)
     {
+        // 先保证表存在
+        ensureMessageTableReady(privateDatabase->getDataBase());
         QList<QSharedPointer<domain::Message>> messages;
         auto pos = findRecentMessagePOsByChatSession(chatSessionId, count);
         messages.reserve(pos.size());
@@ -210,10 +212,10 @@ namespace sys::message::adapter
 
     void MessageRepositoryAdapter::insertMessagePO(const MessagePO& messagePO)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureMessageTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "INSERT OR REPLACE INTO message ("
             "message_id, chat_session_id, seq_in_chat_session, send_time, sender_user_id, content_type, text_content"
@@ -243,10 +245,10 @@ namespace sys::message::adapter
             return std::nullopt;
         }
 
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureMessageTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT message_id, chat_session_id, seq_in_chat_session, send_time, sender_user_id, content_type, "
             "text_content "
@@ -276,10 +278,10 @@ namespace sys::message::adapter
             return {};
         }
 
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureMessageTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT message_id, chat_session_id, seq_in_chat_session, send_time, sender_user_id, content_type, "
             "text_content "

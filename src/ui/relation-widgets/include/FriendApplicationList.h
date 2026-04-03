@@ -30,9 +30,7 @@ namespace ui::relation_widgets
             ApplyTimeRole
         };
 
-        explicit FriendApplicationListModel(
-            FileApplicationService* fileApplicationService = QInjection::Inject,
-            QObject* parent = nullptr);
+        explicit FriendApplicationListModel(QObject* parent = nullptr);
         int rowCount(const QModelIndex& parent) const override;
         QVariant data(const QModelIndex& index, int role) const override;
 
@@ -52,6 +50,7 @@ namespace ui::relation_widgets
         void loadAvatarAsync(const QString& applicationId, const QString& avatarFileId);
         void updateAvatarByApplicationId(const QString& applicationId, const QByteArray& avatar);
     };
+
 
     class ApplicationModelDelegate : public QStyledItemDelegate
     {
@@ -81,6 +80,7 @@ namespace ui::relation_widgets
         static void drawStatusBadge(QPainter* painter, const QString& status, const QRect& statusRect);
     };
 
+
     class FriendApplicationList : public QWidget
     {
         Q_OBJECT
@@ -97,6 +97,5 @@ namespace ui::relation_widgets
         QListView* listView;
         FriendApplicationListModel* listModel;
         sys::relation::application::RelationApplicationService* relationApplicationService = QInjection::Inject;
-        FileApplicationService* fileApplicationService = QInjection::Inject;
     };
 } // namespace ui::relation_widgets

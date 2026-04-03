@@ -9,14 +9,14 @@ namespace sys::relation::adapter
 {
     namespace
     {
-        void ensureFriendShipTableReady(QSqlDatabase* db)
+        void ensureFriendShipTableReady(const QSqlDatabase& db)
         {
-            if (db == nullptr || !db->isOpen())
+            if (!db.isOpen())
             {
                 throw core::InfraException("数据库连接失败");
             }
 
-            QSqlQuery query(*db);
+            QSqlQuery query(db);
             if (!query.exec(
                 "CREATE TABLE IF NOT EXISTS friend_ship ("
                 "friend_ship_id TEXT PRIMARY KEY,"
@@ -36,10 +36,10 @@ namespace sys::relation::adapter
             return nullptr;
         }
 
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureFriendShipTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT friend_ship_id, owner_user_id, peer_user_id "
             "FROM friend_ship WHERE friend_ship_id = :friend_ship_id LIMIT 1");
@@ -74,10 +74,10 @@ namespace sys::relation::adapter
     QSharedPointer<domain::FriendShip> FriendShipRepositoryAdapter::of(const QString& ownerUserId,
                                                                        const QString& peerUserId)
     {
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureFriendShipTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT friend_ship_id, owner_user_id, peer_user_id "
             "FROM friend_ship WHERE owner_user_id = :owner_user_id and peer_user_id = :peer_user_id LIMIT 1");
@@ -107,10 +107,10 @@ namespace sys::relation::adapter
             return;
         }
 
-        QSqlDatabase* db = privateDatabase->getDataBase();
+        QSqlDatabase db = privateDatabase->getDataBase();
         ensureFriendShipTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "INSERT OR REPLACE INTO friend_ship ("
             "friend_ship_id, owner_user_id, peer_user_id"

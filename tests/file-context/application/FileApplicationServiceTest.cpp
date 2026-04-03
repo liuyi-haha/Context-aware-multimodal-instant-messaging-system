@@ -2,7 +2,6 @@
 // Created by 86150 on 2026/4/1.
 //
 
-#pragma once
 #include <QByteArray>
 #include <QFile>
 #include <gtest/gtest.h>

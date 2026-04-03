@@ -9,9 +9,8 @@
 
 namespace ui::relation_widgets
 {
-    ChatSessionListModel::ChatSessionListModel(FileApplicationService* fileApplicationService, QObject* parent)
-        : QAbstractListModel(parent),
-          fileApplicationService(fileApplicationService)
+    ChatSessionListModel::ChatSessionListModel(QObject* parent)
+        : QAbstractListModel(parent)
     {
     }
 
@@ -59,7 +58,7 @@ namespace ui::relation_widgets
 
         for (const auto& view : sortedChatSessions)
         {
-            loadAvatarAsync(buildSessionKey(view), view.avatarFileId);
+            loadAvatarAsync(view.chatSessionId, view.avatarFileId);
         }
     }
 
@@ -73,13 +72,8 @@ namespace ui::relation_widgets
         return views.at(row);
     }
 
-    QString ChatSessionListModel::buildSessionKey(const contract::relation::ChatSessionView& view)
-    {
-        return view.name + "|" + view.lastMessageSummary + "|"
-            + QString::number(view.lastMessageSendTime.toMSecsSinceEpoch());
-    }
 
-    void ChatSessionListModel::loadAvatarAsync(const QString& sessionKey, const QString& avatarFileId)
+    void ChatSessionListModel::loadAvatarAsync(const QString& chatSessionId, const QString& avatarFileId)
     {
         if (avatarFileId.trimmed().isEmpty())
         {
@@ -93,20 +87,20 @@ namespace ui::relation_widgets
                 return {};
             }
             return fileApplicationService->getFile(avatarFileId);
-        }).then(this, [this, sessionKey](const QByteArray& data)
+        }).then(this, [this, chatSessionId](const QByteArray& data)
         {
             if (!data.isNull())
             {
-                updateAvatarBySessionKey(sessionKey, data);
+                updateAvatarByChatSessionId(chatSessionId, data);
             }
         });
     }
 
-    void ChatSessionListModel::updateAvatarBySessionKey(const QString& sessionKey, const QByteArray& avatar)
+    void ChatSessionListModel::updateAvatarByChatSessionId(const QString& chatSessionId, const QByteArray& avatar)
     {
         for (int row = 0; row < views.size(); ++row)
         {
-            if (buildSessionKey(views[row]) != sessionKey)
+            if (views[row].chatSessionId != chatSessionId)
             {
                 continue;
             }
@@ -288,23 +282,30 @@ namespace ui::relation_widgets
         painter->drawText(unreadBadgeRect, Qt::AlignCenter, badgeText);
     }
 
-    ChatSessionList::ChatSessionList(const QList<contract::relation::ChatSessionView>& initialViews,
-                                     FileApplicationService* fileApplicationService,
-                                     QWidget* parent)
+    ChatSessionList::ChatSessionList(QWidget* parent)
         : QWidget(parent),
           listView(new QListView(this)),
-          listModel(new ChatSessionListModel(fileApplicationService, this))
+          listModel(new ChatSessionListModel(this))
     {
         initLayout();
         initStyle();
 
         listView->setModel(listModel);
         listView->setItemDelegate(new ChatSessionModelDelegate(listView));
-
-        listModel->setViews(initialViews);
         setupConnections();
 
-        // 异步加载聊天会话列表（如果initialViews为空，或者需要刷新时调用）
+        // 异步加载聊天会话列表
+        QtConcurrent::run([this]()
+        {
+            if (relationApplicationService == nullptr)
+            {
+                return QList<contract::relation::ChatSessionView>();
+            }
+            return relationApplicationService->getChatSessions();
+        }).then(this, [this](const QList<contract::relation::ChatSessionView>& chatSessions)
+        {
+            listModel->setViews(chatSessions);
+        });
     }
 
     void ChatSessionList::initStyle()

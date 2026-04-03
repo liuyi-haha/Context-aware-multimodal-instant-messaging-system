@@ -10,14 +10,14 @@ namespace sys::user::adapter
 {
     namespace
     {
-        void ensureUserTableReady(QSqlDatabase* db)
+        void ensureUserTableReady(const QSqlDatabase& db)
         {
-            if (db == nullptr || !db->isOpen())
+            if (!db.isOpen())
             {
                 throw core::InfraException("数据库连接失败");
             }
 
-            QSqlQuery query(*db);
+            QSqlQuery query(db);
             if (!query.exec(
                 "CREATE TABLE IF NOT EXISTS user ("
                 "id TEXT PRIMARY KEY,"
@@ -141,10 +141,10 @@ namespace sys::user::adapter
 
     void UserRepositoryAdapter::insert(const UserPO& user)
     {
-        QSqlDatabase* db = commonDatabase->getDataBase();
+        QSqlDatabase db = commonDatabase->getDataBase();
         ensureUserTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "INSERT INTO user (id, nickname, avatar_file_id, phone, description) "
             "VALUES (:id, :nickname, :avatar_file_id, :phone, :description)"
@@ -163,10 +163,10 @@ namespace sys::user::adapter
 
     void UserRepositoryAdapter::update(const UserPO& user)
     {
-        QSqlDatabase* db = commonDatabase->getDataBase();
+        QSqlDatabase db = commonDatabase->getDataBase();
         ensureUserTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "UPDATE user SET "
             "nickname = :nickname, "
@@ -189,10 +189,10 @@ namespace sys::user::adapter
 
     UserPO UserRepositoryAdapter::findById(const QString& userId)
     {
-        QSqlDatabase* db = commonDatabase->getDataBase();
+        QSqlDatabase db = commonDatabase->getDataBase();
         ensureUserTableReady(db);
 
-        QSqlQuery query(*db);
+        QSqlQuery query(db);
         query.prepare(
             "SELECT id, nickname, avatar_file_id, phone, description "
             "FROM user WHERE id = :id"
