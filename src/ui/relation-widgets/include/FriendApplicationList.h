@@ -44,7 +44,7 @@ namespace ui::relation_widgets
 
     private:
         QList<contract::relation::FriendApplicationView> views;
-        FileApplicationService* fileApplicationService;
+        FileApplicationService* fileApplicationService = QInjection::Inject;
 
     private:
         void loadAvatarAsync(const QString& applicationId, const QString& avatarFileId);

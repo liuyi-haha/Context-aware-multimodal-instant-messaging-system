@@ -9,6 +9,7 @@
 #include <QPainterPath>
 #include <QFont>
 #include <QTextDocument>
+#include <QApplication>
 
 #include "MessageListModel.h"
 
@@ -39,7 +40,6 @@ namespace ui::message_widgets
 
             // 计算内容高度
             int contentHeight = calculateContentHeight(index, bubbleWidth);
-
 
             // 计算总高度
             int totalHeight = VERTICAL_MARGIN * 2 + contentHeight;
@@ -195,6 +195,7 @@ namespace ui::message_widgets
         int calculateTextBubbleWidth(const QString& text, int maxWidth) const
         {
             QFont font;
+            font.setPointSize(CONTENT_FONT_SIZE);
             QFontMetrics fm(font);
 
             // 按行分割文本
@@ -249,6 +250,9 @@ namespace ui::message_widgets
                 return 0;
 
             QTextDocument doc;
+            QFont font;
+            font.setPointSize(CONTENT_FONT_SIZE);
+            doc.setDefaultFont(font);
             doc.setPlainText(text);
             doc.setTextWidth(width);
             return qCeil(doc.size().height());
@@ -294,8 +298,8 @@ namespace ui::message_widgets
         {
             painter->save();
 
-            QFont font = painter->font();
-            font.setPointSize(font.pointSize() - 1);
+            QFont font;
+            font.setPointSize(HEADER_FONT_SIZE);
             painter->setFont(font);
 
             // 设置浅色字体
@@ -386,6 +390,10 @@ namespace ui::message_widgets
             painter->setPen(Qt::black);
 
             QTextDocument doc;
+            QFont font;
+            font.setPointSize(CONTENT_FONT_SIZE);
+            font.setFamily("Microsoft YaHei");
+            doc.setDefaultFont(font);
             doc.setPlainText(content);
             doc.setTextWidth(rect.width());
 
@@ -411,12 +419,18 @@ namespace ui::message_widgets
             {
                 painter->fillRect(rect, QColor(240, 240, 240));
                 painter->setPen(Qt::gray);
+                QFont font;
+                font.setPointSize(CONTENT_FONT_SIZE);
+                painter->setFont(font);
                 painter->drawText(rect, Qt::AlignCenter, "加载中...");
             }
             else
             {
                 painter->fillRect(rect, QColor(240, 240, 240));
                 painter->setPen(Qt::gray);
+                QFont font;
+                font.setPointSize(CONTENT_FONT_SIZE);
+                painter->setFont(font);
                 painter->drawText(rect, Qt::AlignCenter, "点击加载");
             }
 
@@ -435,20 +449,24 @@ namespace ui::message_widgets
             iconRect.setWidth(40);
             painter->fillRect(iconRect, QColor(200, 200, 200));
             painter->setPen(Qt::black);
+            QFont font;
+            font.setPointSize(CONTENT_FONT_SIZE);
+            painter->setFont(font);
             painter->drawText(iconRect, Qt::AlignCenter, "📄");
 
             // 文件名和大小
             QRect textRect = rect;
             textRect.setLeft(iconRect.right() + 8);
 
-            QFont font = painter->font();
             painter->setPen(Qt::black);
             painter->drawText(textRect, Qt::AlignTop, fileName);
 
             QRect sizeRect = textRect;
-            sizeRect.setTop(textRect.top() + 20);
-            font.setPointSize(font.pointSize() - 1);
-            painter->setFont(font);
+            sizeRect.setTop(textRect.top() + CONTENT_FONT_SIZE + 4);
+
+            QFont smallFont;
+            smallFont.setPointSize(CONTENT_FONT_SIZE - 1);
+            painter->setFont(smallFont);
             painter->setPen(Qt::gray);
             painter->drawText(sizeRect, Qt::AlignTop, formatFileSize(fileSize));
 
@@ -467,6 +485,9 @@ namespace ui::message_widgets
             iconRect.setWidth(30);
             painter->fillRect(iconRect, QColor(100, 150, 200));
             painter->setPen(Qt::white);
+            QFont font;
+            font.setPointSize(CONTENT_FONT_SIZE);
+            painter->setFont(font);
             painter->drawText(iconRect, Qt::AlignCenter, "🎤");
 
             // 时长
@@ -518,19 +539,23 @@ namespace ui::message_widgets
             }
         }
 
+        // 字体大小常量（硬编码）
+        static constexpr int CONTENT_FONT_SIZE = 12; // 内容字体大小
+        static constexpr int HEADER_FONT_SIZE = 10; // 头部字体大小（昵称和时间）
+
         // 常量
         static constexpr int HORIZONTAL_MARGIN = 12;
-        static constexpr int VERTICAL_MARGIN = 8;
-        static constexpr int AVATAR_SIZE = 40;
+        static constexpr int VERTICAL_MARGIN = 12;
+        static constexpr int AVATAR_SIZE = 50;
         static constexpr int AVATAR_SPACING = 8;
         static constexpr int BUBBLE_PADDING = 10;
         static constexpr int HEADER_HEIGHT = 20;
-        static constexpr int ELEMENT_SPACING = 30;
+        static constexpr int ELEMENT_SPACING = 20;
         static constexpr int BUBBLE_RADIUS = 8;
         static constexpr int MAX_IMAGE_HEIGHT = 200;
         static constexpr int FILE_HEIGHT = 60;
         static constexpr int AUDIO_HEIGHT = 50;
         static constexpr int MIN_BUBBLE_WIDTH = 60;
-        static constexpr float MAX_BUBBLE_WIDTH_RATIO = 0.6f; // 气泡最大宽度为整个Item宽度的60%
+        static constexpr float MAX_BUBBLE_WIDTH_RATIO = 0.6f;
     };
 }

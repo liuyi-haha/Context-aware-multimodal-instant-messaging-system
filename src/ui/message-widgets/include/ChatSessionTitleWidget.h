@@ -33,18 +33,16 @@ namespace ui::message_widgets
     private:
         void initStyle()
         {
+            setAttribute(Qt::WA_StyledBackground, true);
             setObjectName("titleWidget");
-            qDebug() << "objectName:" << objectName(); // 打印验证
             setStyleSheet(
                 "#titleWidget {"
-                "   border-bottom: 1px solid #d0d0d0; "
+                "   border-bottom: 1px solid #e0e0e0; "
                 "   background-color: rgb(237, 237, 237);"
-                "   border: 2px solid red;"
                 "}"
                 "QLabel {"
                 "   font-size: 18px;"
                 "   font-weight: 600;"
-                "   background-color: rgb(237, 237, 237);"
                 "}");
             setFixedHeight(70);
             QPalette pal;

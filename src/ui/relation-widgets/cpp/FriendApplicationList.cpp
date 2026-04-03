@@ -143,13 +143,14 @@ namespace ui::relation_widgets
     void FriendApplicationListModel::loadAvatarAsync(const QString& applicationId, const QString& avatarFileId)
     {
         qDebug() << "Start loading avatar for applicationId:" << applicationId << "avatarFileId:" << avatarFileId;;
-        QtConcurrent::run([avatarFileId, service = fileApplicationService]()-> QByteArray
+        QtConcurrent::run([avatarFileId, this]()-> QByteArray
         {
-            if (service == nullptr)
+            if (fileApplicationService == nullptr)
             {
+                qDebug() << "FileApplicationService is not available. Cannot load avatar for fileId:" << avatarFileId;
                 return {};
             }
-            return service->getFile(avatarFileId);
+            return fileApplicationService->getFile(avatarFileId);
         }).then(this, [this, applicationId](const QByteArray& data)
         {
             qDebug() << "Avatar loaded for applicationId:" << applicationId << "data size:" << data.size();

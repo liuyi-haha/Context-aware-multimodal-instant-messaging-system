@@ -210,6 +210,7 @@ set(IMS_SHARED_EXECUTABLE_SOURCES
         sys/message-context/adapter/repository/include/MessageRepositoryAdapter.h
         sys/message-context/application/cpp/MessageViewAssembler.cpp
         sys/message-context/application/include/MessageViewAssembler.h
+        "ui/main-widgets/include/MiddlePanel .h"
 )
 
 set(IMS_SHARED_LINK_LIBS

@@ -41,7 +41,7 @@ namespace ui::message_widgets
             listView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
             listView->setSelectionBehavior(QAbstractItemView::SelectRows);
             listView->setMouseTracking(false);
-            // 确保整个 item 都重绘
+            listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
             listView->setStyleSheet(R"(
             QListView {
                 border: none;
