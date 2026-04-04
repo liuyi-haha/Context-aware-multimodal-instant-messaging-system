@@ -18,8 +18,6 @@ client/OAIUserRegisterUser_200_response.cpp
 client/OAIUserRegisterUser_200_response.h
 client/OAIUserRegisterUser_200_response_data.cpp
 client/OAIUserRegisterUser_200_response_data.h
-client/OAIUserRegisterUser_request.cpp
-client/OAIUserRegisterUser_request.h
 client/OAIUserSearchUser_200_response.cpp
 client/OAIUserSearchUser_200_response.h
 client/OAIUserSearchUser_200_response_data.cpp

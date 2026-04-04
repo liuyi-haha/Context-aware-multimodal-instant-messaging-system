@@ -12,7 +12,7 @@ class UserTest : public ::testing::Test
 };
 
 // rule:
-// 用户昵称必须大于1个字符，不大于10个字符，且只能包含中英文和下划线
+// 用户昵称数量[1,10]，且只能包含中英文和下划线
 // 用户手机号必须是11位数字
 TEST_F(UserTest, 昵称格式正确时_调用静态check方法_返回true)
 {
@@ -31,7 +31,6 @@ TEST_F(UserTest, 昵称格式不正确时_调用静态check方法_返回false)
 {
     const std::vector<QString> invalidNicknames = {
         "",
-        "a",
         "abcdefghijk", // 11
         "nick-name",
         "name 1",

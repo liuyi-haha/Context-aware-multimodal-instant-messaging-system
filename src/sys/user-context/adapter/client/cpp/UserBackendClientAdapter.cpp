@@ -26,7 +26,8 @@ namespace sys::user::adapter
     }
 
     OpenAPIUser::OAIUserRegisterUser_200_response UserServerApiGateway::registerUser(
-        const OpenAPIUser::OAIUserRegisterUser_request& request)
+        const QString& nickname, const QString& phone, const OpenAPIUser::OAIUserHttpFileElement& avatar,
+        const QString& password)
     {
         OpenAPIUser::OAIUserRegisterUser_200_response response;
         OpenAPIUser::OAIUserDefaultApi api;
@@ -56,7 +57,7 @@ namespace sys::user::adapter
                              loop.quit();
                          });
 
-        api.registerUser(request);
+        api.registerUser(nickname, avatar, phone, password);
         loop.exec();
 
         if (!response.is_data_Set())
@@ -172,20 +173,17 @@ namespace sys::user::adapter
     }
 
     port::BackendClient::RegisterUserResult BackendClientAdapter::registerUser(
-        const QString& hashedPassword, const QString& nickname, const QString& phone)
+        const QString& hashedPassword, const QString& nickname, const QString& phone, const QByteArray& avatar)
     {
         if (apiGateway == nullptr)
         {
             throw core::InfraException("UserServiceApiGateway 未配置");
         }
 
-        OpenAPIUser::OAIUserRegisterUser_request request;
-        request.setNickname(nickname);
-        request.setPhone(phone);
-        request.setPassword(hashedPassword);
-        request.setAvatar("");
 
-        const auto response = apiGateway->registerUser(request);
+        auto fileElement = OpenAPIUser::OAIUserHttpFileElement();
+        fileElement.fromByteArray(avatar);
+        const auto response = apiGateway->registerUser(nickname, phone, fileElement, hashedPassword);
         if (!response.isSuccess())
         {
             const RegisterUserErrCode errCode = fromErrCode(response.getErrCode());

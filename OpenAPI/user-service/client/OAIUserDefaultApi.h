@@ -17,8 +17,8 @@
 #include "OAIUserServerConfiguration.h"
 #include "OAIUserOauth.h"
 
+#include "OAIUserHttpFileElement.h"
 #include "OAIUserRegisterUser_200_response.h"
-#include "OAIUserRegisterUser_request.h"
 #include "OAIUserSearchUser_200_response.h"
 #include <QString>
 
@@ -59,9 +59,12 @@ public:
     QString getParamStyleDelimiter(const QString &style, const QString &name, bool isExplode);
 
     /**
-    * @param[in]  oai_user_register_user_request OAIUserRegisterUser_request [required]
+    * @param[in]  nickname QString [required]
+    * @param[in]  avatar OAIUserHttpFileElement [required]
+    * @param[in]  phone QString [required]
+    * @param[in]  password QString [required]
     */
-    void registerUser(const OAIUserRegisterUser_request &oai_user_register_user_request);
+    void registerUser(const QString &nickname, const OAIUserHttpFileElement &avatar, const QString &phone, const QString &password);
 
     /**
     * @param[in]  keyword QString [required]

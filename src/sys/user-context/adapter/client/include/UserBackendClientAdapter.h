@@ -1,7 +1,7 @@
 #pragma once
 
+#include "OAIUserHttpFileElement.h"
 #include "OAIUserRegisterUser_200_response.h"
-#include "OAIUserRegisterUser_request.h"
 #include "OAIUserSearchUser_200_response.h"
 #include "sys/user-context/port/client/include/BackendClient.h"
 
@@ -12,7 +12,8 @@ namespace sys::user::adapter
     public:
         virtual ~IUserServiceApiGateway() = default;
         virtual OpenAPIUser::OAIUserRegisterUser_200_response registerUser(
-            const OpenAPIUser::OAIUserRegisterUser_request& request) = 0;
+            const QString& nickname, const QString& phone, const OpenAPIUser::OAIUserHttpFileElement& avatar,
+            const QString& password) = 0;
         virtual OpenAPIUser::OAIUserSearchUser_200_response searchUser(const QString& keyword) = 0;
     };
 
@@ -20,7 +21,8 @@ namespace sys::user::adapter
     {
     public:
         OpenAPIUser::OAIUserRegisterUser_200_response
-        registerUser(const OpenAPIUser::OAIUserRegisterUser_request& request) override;
+        registerUser(const QString& nickname, const QString& phone,
+                     const OpenAPIUser::OAIUserHttpFileElement& avatar, const QString& password) override;
 
         OpenAPIUser::OAIUserSearchUser_200_response searchUser(const QString& keyword) override;
     };
@@ -51,7 +53,7 @@ namespace sys::user::adapter
         }
 
         RegisterUserResult registerUser(const QString& hashedPassword, const QString& nickname,
-                                        const QString& phone) override;
+                                        const QString& phone, const QByteArray& avatar) override;
         QSharedPointer<domain::User> searchUser(const QString& account) override;
 
     private:

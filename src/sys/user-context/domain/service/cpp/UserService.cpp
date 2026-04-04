@@ -54,7 +54,7 @@ namespace sys::user::domain
         QString hashedPassword = userValidator->validate(nickname, phone, password, avatar);
 
         auto [userId, avatarFileId] = backendClient->registerUser(
-            hashedPassword, nickname, phone);
+            hashedPassword, nickname, phone, avatar);
         auto user = User::of(userId, nickname, phone, avatar, avatarFileId);
 
         fileClient->uploadAvatar(user);

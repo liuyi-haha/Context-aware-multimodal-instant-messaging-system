@@ -20,8 +20,8 @@ namespace sys::user::domain
 
     bool Nickname::checkNickname(const QString& nickname)
     {
-        // 规则：长度 2~10，字符仅允许中文、英文和下划线
-        static const QRegularExpression nicknamePattern("^[A-Za-z_\\x{4E00}-\\x{9FFF}]{2,10}$");
+        // 规则：长度 1~10，字符仅允许中文、英文和下划线
+        static const QRegularExpression nicknamePattern("^[A-Za-z_\\x{4E00}-\\x{9FFF}]{1,10}$");
         return nicknamePattern.match(nickname).hasMatch();
     }
 

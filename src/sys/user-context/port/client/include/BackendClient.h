@@ -24,7 +24,7 @@ namespace sys::user::port
 
         virtual ~BackendClient() = default;
         virtual RegisterUserResult registerUser(const QString& hashedPassword, const QString& nickname,
-                                                const QString& phone) = 0;
+                                                const QString& phone, const QByteArray& avatar) = 0;
         virtual QSharedPointer<domain::User> searchUser(const QString& account) = 0;
     };
 }

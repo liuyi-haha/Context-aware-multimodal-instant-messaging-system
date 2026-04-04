@@ -4,7 +4,6 @@ HEADERS += \
 # Models
     $${PWD}/OAIUserRegisterUser_200_response.h \
     $${PWD}/OAIUserRegisterUser_200_response_data.h \
-    $${PWD}/OAIUserRegisterUser_request.h \
     $${PWD}/OAIUserSearchUser_200_response.h \
     $${PWD}/OAIUserSearchUser_200_response_data.h \
 # APIs
@@ -23,7 +22,6 @@ SOURCES += \
 # Models
     $${PWD}/OAIUserRegisterUser_200_response.cpp \
     $${PWD}/OAIUserRegisterUser_200_response_data.cpp \
-    $${PWD}/OAIUserRegisterUser_request.cpp \
     $${PWD}/OAIUserSearchUser_200_response.cpp \
     $${PWD}/OAIUserSearchUser_200_response_data.cpp \
 # APIs

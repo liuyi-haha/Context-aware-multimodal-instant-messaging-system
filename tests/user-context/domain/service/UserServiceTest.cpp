@@ -46,14 +46,14 @@ protected:
 
 // rule:
 // 用户必须上传头像
-// 用户昵称必须大于1个字符，不大于10个字符，且只能包含中英文和下划线
+// 用户昵称数量[1,10]，且只能包含中英文和下划线
 // 用户手机号必须是11位数字
 // 用户密码必须至少6位，且只能包含数字、英文和下划线
 // 手机号不能重复注册
 TEST_F(UserServiceTest, 当头像为空时_调用registerUser方法_抛出异常)
 {
     EXPECT_CALL(authClient, validateAndHashPassword(testing::_)).Times(0);
-    EXPECT_CALL(backendClient, registerUser(testing::_, testing::_, testing::_)).Times(0);
+    EXPECT_CALL(backendClient, registerUser(testing::_, testing::_, testing::_, testing::_)).Times(0);
     EXPECT_CALL(fileClient, uploadAvatar(testing::_)).Times(0);
     EXPECT_CALL(userRepository, save(testing::_)).Times(0);
 
@@ -69,14 +69,14 @@ TEST_F(UserServiceTest, 当头像为空时_调用registerUser方法_抛出异常
 TEST_F(UserServiceTest, 当昵称格式不正确时_调用registerUser方法_抛出异常)
 {
     EXPECT_CALL(authClient, validateAndHashPassword(testing::_)).Times(0);
-    EXPECT_CALL(backendClient, registerUser(testing::_, testing::_, testing::_)).Times(0);
+    EXPECT_CALL(backendClient, registerUser(testing::_, testing::_, testing::_, testing::_)).Times(0);
     EXPECT_CALL(fileClient, uploadAvatar(testing::_)).Times(0);
     EXPECT_CALL(userRepository, save(testing::_)).Times(0);
 
     tests::utils::expectThrowWithMessage<sys::user::domain::InvalidNicknameException>(
         [&]
         {
-            userService->registerUser("a", "13800138000", "abc_123", QByteArray("avatar"));
+            userService->registerUser("", "13800138000", "abc_123", QByteArray("avatar"));
         },
         "昵称不符合规范"
     );
@@ -85,7 +85,7 @@ TEST_F(UserServiceTest, 当昵称格式不正确时_调用registerUser方法_抛
 TEST_F(UserServiceTest, 当手机号格式不正确时_调用registerUser方法_抛出异常)
 {
     EXPECT_CALL(authClient, validateAndHashPassword(testing::_)).Times(0);
-    EXPECT_CALL(backendClient, registerUser(testing::_, testing::_, testing::_)).Times(0);
+    EXPECT_CALL(backendClient, registerUser(testing::_, testing::_, testing::_, testing::_)).Times(0);
     EXPECT_CALL(fileClient, uploadAvatar(testing::_)).Times(0);
     EXPECT_CALL(userRepository, save(testing::_)).Times(0);
 
@@ -103,7 +103,7 @@ TEST_F(UserServiceTest, 当密码格式不正确时_调用registerUser方法_抛
     EXPECT_CALL(authClient, validateAndHashPassword(QStringLiteral("bad-123")))
         .Times(1)
         .WillOnce(testing::Return(sys::user::port::AuthResult{false, ""}));
-    EXPECT_CALL(backendClient, registerUser(testing::_, testing::_, testing::_)).Times(0);
+    EXPECT_CALL(backendClient, registerUser(testing::_, testing::_, testing::_, testing::_)).Times(0);
     EXPECT_CALL(fileClient, uploadAvatar(testing::_)).Times(0);
     EXPECT_CALL(userRepository, save(testing::_)).Times(0);
 
@@ -123,7 +123,8 @@ TEST_F(UserServiceTest, 当输入合法时_调用registerUser方法_成功注册
         .WillOnce(testing::Return(sys::user::port::AuthResult{true, "HASH_abc_123"}));
 
     EXPECT_CALL(backendClient,
-                registerUser(QStringLiteral("HASH_abc_123"), QStringLiteral("有效昵称"), QStringLiteral("13800138000")))
+                registerUser(QStringLiteral("HASH_abc_123"), QStringLiteral("有效昵称"), QStringLiteral("13800138000"),
+                    QByteArray("avatar")))
         .Times(1)
         .WillOnce(testing::Return(sys::user::port::BackendClient::RegisterUserResult{"123456789", "A10001"}));
 
@@ -147,7 +148,8 @@ TEST_F(UserServiceTest, 当手机号已被注册时_调用registerUser方法_抛
         .WillOnce(testing::Return(sys::user::port::AuthResult{true, "HASH_abc_123"}));
 
     EXPECT_CALL(backendClient,
-                registerUser(QStringLiteral("HASH_abc_123"), QStringLiteral("有效昵称"), QStringLiteral("13800138000")))
+                registerUser(QStringLiteral("HASH_abc_123"), QStringLiteral("有效昵称"), QStringLiteral("13800138000"),
+                    QByteArray("avatar")))
         .Times(1)
         .WillOnce(testing::Throw(sys::user::domain::PhoneHasBeenRegisteredException()));
 

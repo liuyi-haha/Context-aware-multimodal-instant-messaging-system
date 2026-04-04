@@ -3,14 +3,14 @@
 // Created by 86150 on 2026/4/1.
 //
 // rule:
-// 昵称必须大于1个字符，不大于10个字符，且只能包含中英文和下划线
+// 用户昵称数量[1,10]，且只能包含中英文和下划线
 // 手机号必须是11位数字
 // 密码必须至少6位，且只能包含数字、英文和下划线
 // 手机号不能被重复注册
 TEST_F(UserApplicationServiceTestFixture, 注册用户时_如果昵称不合法_应该给出提示)
 {
     auto request = buildValidRegisterUserRequest();
-    request.nickname = "a";
+    request.nickname = "";
 
     EXPECT_CALL(authClient, validateAndHashPassword(testing::_)).Times(0);
     EXPECT_CALL(fileClient, uploadAvatar(testing::_)).Times(0);

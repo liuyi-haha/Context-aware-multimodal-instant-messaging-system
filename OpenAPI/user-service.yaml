@@ -22,8 +22,7 @@ components:
       in: header
       required: true
       schema:
-        type: integer
-        format: int64
+        type: string
       description: 网关从Token解析后注入的用户ID（客户端无需传递）
 
 paths:
@@ -36,7 +35,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               required:
@@ -49,6 +48,7 @@ paths:
                   type: string
                 avatar:
                   type: string
+                  format: binary
                 phone:
                   type: string
                 password:

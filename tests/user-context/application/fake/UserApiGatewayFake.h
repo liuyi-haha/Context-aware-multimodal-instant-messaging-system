@@ -34,12 +34,13 @@ namespace tests::user::fake
         }
 
         OpenAPIUser::OAIUserRegisterUser_200_response
-        registerUser(const OpenAPIUser::OAIUserRegisterUser_request& request) override
+        registerUser(const QString& nickname, const QString& phone, const OpenAPIUser::OAIUserHttpFileElement& avatar,
+                     const QString& password) override
         {
             ++registerUserCallCount;
 
             OpenAPIUser::OAIUserRegisterUser_200_response response;
-            if (findUserIndexByPhone(request.getPhone()).has_value())
+            if (findUserIndexByPhone(phone))
             {
                 response.setSuccess(false);
                 response.setErrCode(QStringLiteral("PHONE_REGISTERED"));
@@ -49,9 +50,9 @@ namespace tests::user::fake
 
             FakeUserProfile user;
             user.userId = QString::number(nextGeneratedUserId++);
-            user.nickname = request.getNickname();
+            user.nickname = nickname;
             user.avatarFileId = QString();
-            user.phone = request.getPhone();
+            user.phone = phone;
             user.description = QString();
 
             upsertUser(user);

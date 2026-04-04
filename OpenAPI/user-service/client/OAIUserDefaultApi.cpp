@@ -214,7 +214,7 @@ QString OAIUserDefaultApi::getParamStyleDelimiter(const QString &style, const QS
     }
 }
 
-void OAIUserDefaultApi::registerUser(const OAIUserRegisterUser_request &oai_user_register_user_request) {
+void OAIUserDefaultApi::registerUser(const QString &nickname, const OAIUserHttpFileElement &avatar, const QString &phone, const QString &password) {
     QString fullPath = QString(_serverConfigs["registerUser"][_serverIndices.value("registerUser")].URL()+"/users");
     
     OAIUserHttpRequestWorker *worker = new OAIUserHttpRequestWorker(this, _manager);
@@ -222,12 +222,23 @@ void OAIUserDefaultApi::registerUser(const OAIUserRegisterUser_request &oai_user
     worker->setWorkingDirectory(_workingDirectory);
     OAIUserHttpRequestInput input(fullPath, "POST");
 
+    
     {
-
-        
-        QByteArray output = oai_user_register_user_request.asJson().toUtf8();
-        input.request_body.append(output);
+        input.add_var("nickname", ::OpenAPIUser::toStringValue(nickname));
     }
+    
+    {
+        input.add_file("avatar", avatar.local_filename, avatar.request_filename, avatar.mime_type);
+    }
+    
+    {
+        input.add_var("phone", ::OpenAPIUser::toStringValue(phone));
+    }
+    
+    {
+        input.add_var("password", ::OpenAPIUser::toStringValue(password));
+    }
+
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     for (auto keyValueIt = _defaultHeaders.keyValueBegin(); keyValueIt != _defaultHeaders.keyValueEnd(); keyValueIt++) {
         input.headers.insert(keyValueIt->first, keyValueIt->second);

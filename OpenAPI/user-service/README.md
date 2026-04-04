@@ -33,7 +33,10 @@ using namespace test_namespace;
 
 class Example : public QObject {
     Q_OBJECT
-    OAIUserRegisterUser_request create();
+    QString create();
+    OAIUserHttpFileElement create();
+    QString create();
+    QString create();
 public Q_SLOTS:
    void exampleFunction1();
 };
@@ -48,8 +51,14 @@ example.cpp:
 #include <QTimer>
 #include <QEventLoop>
 
-OAIUserRegisterUser_request Example::create(){
-    OAIUserRegisterUser_request obj;
+QString Example::create(){
+    QString obj;
+OAIUserHttpFileElement Example::create(){
+    OAIUserHttpFileElement obj;
+QString Example::create(){
+    QString obj;
+QString Example::create(){
+    QString obj;
  return obj;
 }
 
@@ -65,8 +74,41 @@ void Example::exampleFunction1(){
           loop.quit();
       });
 
-      OAIUserRegisterUser_request oai_user_register_user_request = create(); // OAIUserRegisterUser_request | 
-      apiInstance.registerUser(oai_user_register_user_request);
+      QString nickname = create(); // QString | 
+
+      QEventLoop loop;
+      connect(&apiInstance, &OAIUserDefaultApi::registerUserSignal, [&]() {
+          loop.quit();
+      });
+      connect(&apiInstance, &OAIUserDefaultApi::registerUserSignalE, [&](QNetworkReply::NetworkError, QString error_str) {
+          qDebug() << "Error happened while issuing request : " << error_str;
+          loop.quit();
+      });
+
+      OAIUserHttpFileElement avatar = create(); // OAIUserHttpFileElement | 
+
+      QEventLoop loop;
+      connect(&apiInstance, &OAIUserDefaultApi::registerUserSignal, [&]() {
+          loop.quit();
+      });
+      connect(&apiInstance, &OAIUserDefaultApi::registerUserSignalE, [&](QNetworkReply::NetworkError, QString error_str) {
+          qDebug() << "Error happened while issuing request : " << error_str;
+          loop.quit();
+      });
+
+      QString phone = create(); // QString | 
+
+      QEventLoop loop;
+      connect(&apiInstance, &OAIUserDefaultApi::registerUserSignal, [&]() {
+          loop.quit();
+      });
+      connect(&apiInstance, &OAIUserDefaultApi::registerUserSignalE, [&](QNetworkReply::NetworkError, QString error_str) {
+          qDebug() << "Error happened while issuing request : " << error_str;
+          loop.quit();
+      });
+
+      QString password = create(); // QString | 
+      apiInstance.registerUser(nicknameavatarphonepassword);
       QTimer::singleShot(5000, &loop, &QEventLoop::quit);
       loop.exec();
   }

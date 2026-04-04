@@ -13,7 +13,6 @@ include(CMakePackageConfigHelpers)
 add_library(${PROJECT_NAME}
   OAIUserRegisterUser_200_response.h
   OAIUserRegisterUser_200_response_data.h
-  OAIUserRegisterUser_request.h
   OAIUserSearchUser_200_response.h
   OAIUserSearchUser_200_response_data.h
   OAIUserDefaultApi.h
@@ -27,7 +26,6 @@ add_library(${PROJECT_NAME}
   OAIUserOauth.h
   OAIUserRegisterUser_200_response.cpp
   OAIUserRegisterUser_200_response_data.cpp
-  OAIUserRegisterUser_request.cpp
   OAIUserSearchUser_200_response.cpp
   OAIUserSearchUser_200_response_data.cpp
   OAIUserDefaultApi.cpp
