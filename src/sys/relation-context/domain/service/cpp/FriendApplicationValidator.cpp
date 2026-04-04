@@ -33,7 +33,7 @@ namespace sys::relation::domain
             throw InvalidVerificationMessageException();
         }
 
-        if (!RecipientRemark::checkRecipientRemark(recipientRemark))
+        if (!core::RecipientRemark::checkRecipientRemark(recipientRemark))
         {
             throw InvalidRecipientRemarkException();
         }

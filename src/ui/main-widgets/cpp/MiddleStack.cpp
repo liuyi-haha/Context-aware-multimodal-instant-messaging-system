@@ -10,9 +10,6 @@ namespace ui::main_widgets
 {
     void MiddleStack::initStyle()
     {
-        setMinimumWidth(300);
-        setMaximumWidth(500);
-        setStyleSheet("background-color: rgb(247, 247, 247);");
     }
 
     void MiddleStack::createPages()

@@ -5,6 +5,8 @@
 #include <QString>
 #include <stdexcept>
 
+#include "sys/relation-context/domain/exception/InvalidRecipientRemarkException.h"
+
 namespace sys::core
 {
     class RecipientRemark
@@ -15,13 +17,13 @@ namespace sys::core
         {
             if (!checkRecipientRemark(remark))
             {
-                throw std::invalid_argument("invalid recipient remark");
+                throw relation::domain::InvalidRecipientRemarkException();
             }
         }
 
         static bool checkRecipientRemark(const QString& value)
         {
-            return value.size() <= 30;
+            return value.size() <= 20 && value.size() >= 1;
         }
 
         QString value() const

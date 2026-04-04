@@ -14,6 +14,7 @@ namespace contract::user
         QString userId;
         QString nickname;
         QString avatarFileId;
+        std::optional<QByteArray> avatar; // 可选，可能需要异步加载
 
         void from(QSharedPointer<sys::user::domain::User> user)
         {

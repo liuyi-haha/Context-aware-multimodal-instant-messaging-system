@@ -1,8 +1,10 @@
 #pragma once
 #include <QWidget>
 
-namespace ui::main_widgets {
+#include "MiddlePanel.h"
 
+namespace ui::main_widgets
+{
     class NavBar;
     class MiddleStack;
     class RightStack;
@@ -15,15 +17,14 @@ namespace ui::main_widgets {
         void initializeStyle();
         void createSubWidgets();
         void initializeLayout();
-        explicit MainWindow(QWidget *parent = nullptr);
+        explicit MainWindow(QWidget* parent = nullptr);
 
     private:
         void setupConnections();
 
     private:
         NavBar* m_navBar;
-        MiddleStack* m_middleStack;
         RightStack* m_rightStack;
+        MiddlePanel* m_middlePanel;
     };
-
 }

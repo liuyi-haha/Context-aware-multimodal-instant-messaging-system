@@ -210,7 +210,7 @@ set(IMS_SHARED_EXECUTABLE_SOURCES
         sys/message-context/adapter/repository/include/MessageRepositoryAdapter.h
         sys/message-context/application/cpp/MessageViewAssembler.cpp
         sys/message-context/application/include/MessageViewAssembler.h
-        "ui/main-widgets/include/MiddlePanel .h"
+
 )
 
 set(IMS_SHARED_LINK_LIBS
@@ -267,7 +267,10 @@ add_executable(instant_messaging_system
         ${IMS_SHARED_EXECUTABLE_SOURCES}
         ui/message-widgets/include/MessageListModel.h
         ui/message-widgets/include/MessagePanel.h
+        ui/user-widgets/include/SearchWindow.h
+        ui/main-widgets/include/MiddlePanel.h
         sys/message-context/starter/Starter.h
+
 )
 
 set(IMS_SHARED_INCLUDE_DIRS
@@ -339,19 +342,6 @@ add_executable(run_tests
         ../tests/message-context/application/GetChatSessionLastMessageInfosTest.cpp
         ../tests/relation-context/application/service/CheckSenderHasPermissionToSendMessageTest.cpp
 )
-
-
-#add_executable(run_tests
-#        ${CMAKE_CURRENT_SOURCE_DIR}/../tests/user-context/domain/object/UserTest.cpp
-#        ${CMAKE_CURRENT_SOURCE_DIR}/../tests/user-context/domain/service/UserValidatorTest.cpp
-#        ${IMS_SHARED_EXECUTABLE_SOURCES}
-#        ../tests/user-context/domain/service/UserServiceTest.cpp
-#        ../tests/user-context/application/UserApplicationServiceTestFixture.h
-#        ../tests/auth-context/domain/service/UserCredentialServiceTest.cpp
-#        ../tests/auth-context/application/AuthApplicationServiceTest.cpp
-#        ../tests/auth-context/domain/object/PasswordTest.cpp
-#        ../tests/notification-context/application/NotificationApplicationServiceTest.cpp
-#)
 
 enable_testing()
 add_test(NAME RunAllTests COMMAND run_tests)

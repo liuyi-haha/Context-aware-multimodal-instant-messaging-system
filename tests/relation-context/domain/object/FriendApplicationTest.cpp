@@ -29,7 +29,7 @@ protected:
 
 // rule:
 // 好友申请的验证消息长度限制为[0, 20], 字符类型不限
-// 好友申请的对方备注只能包含中英文，下划线，且长度限制为[0, 20]
+// 好友申请的对方备注长度限制为[1, 20], 字符类型不限
 // 已经被处理的好友申请无法再次被处理
 TEST_F(FriendApplicationTest, 当好友申请的验证消息不合法时_调用VerifyMessage的静态check方法应该返回false)
 {
@@ -52,9 +52,8 @@ TEST_F(FriendApplicationTest, 当好友申请的验证消息不合法时_构造F
 
 TEST_F(FriendApplicationTest, 当好友申请的对方备注不合法时_调用RecipientRemark的静态check方法_应该返回false)
 {
-    EXPECT_FALSE(sys::relation::domain::RecipientRemark::checkRecipientRemark("remark with space"));
-    EXPECT_FALSE(sys::relation::domain::RecipientRemark::checkRecipientRemark(
-        QStringLiteral("123456789012345678901")));
+    EXPECT_FALSE(sys::core::RecipientRemark::checkRecipientRemark(
+        QString(21, 'a'))); // 长度超过20
 }
 
 TEST_F(FriendApplicationTest, 当好友申请的对方备注不合法时_构造FriendApplication对象_应该抛出异常)
@@ -65,7 +64,7 @@ TEST_F(FriendApplicationTest, 当好友申请的对方备注不合法时_构造F
             "FA002",
             "100000002",
             QStringLiteral("你好_abc"),
-            "invalid!",
+            QString(21, 'a'), // 长度超过20
             QDateTime::currentDateTime()),
         sys::relation::domain::InvalidRecipientRemarkException);
 }

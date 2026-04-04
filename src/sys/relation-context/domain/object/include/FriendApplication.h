@@ -6,6 +6,8 @@
 #include <QSharedPointer>
 #include <QString>
 
+#include "sys/common/RecipientRemark.hpp"
+
 namespace sys::relation::domain
 {
     class VerificationMessage
@@ -20,17 +22,6 @@ namespace sys::relation::domain
         QString message;
     };
 
-    class RecipientRemark
-    {
-    public:
-        explicit RecipientRemark(const QString& remark = QString());
-
-        static bool checkRecipientRemark(const QString& value);
-        const QString& value() const;
-
-    private:
-        QString remark;
-    };
 
     class ApplyingInfo
     {
@@ -72,8 +63,8 @@ namespace sys::relation::domain
         const QString& friendApplicationId() const;
         const QString& applicantUserId() const;
         const QString& targetUserId() const;
-        const QString& verificationMessageValue() const;
-        const QString& recipientRemarkValue() const;
+        QString verificationMessageValue() const;
+        QString recipientRemarkValue() const;
         const QDateTime& applyTime() const;
         ApplicationStatus applicationStatus() const;
         void accept();
@@ -89,7 +80,7 @@ namespace sys::relation::domain
         QString id;
         VerificationMessage verificationMessage;
         ApplyingInfo applyingInfo;
-        RecipientRemark recipientRemark;
+        core::RecipientRemark recipientRemark;
         ApplicationStatus status = ApplicationStatus::Pending;
     };
 }

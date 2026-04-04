@@ -61,8 +61,8 @@ protected:
 
 //---------------------- validateSendFriendApplicationInputs--------------------------
 // rule:
-// 好友申请的验证消息长度限制为[0, 20]，字符类型不限
-// 好友申请的对方备注长度限制为[0, 20]，字符类型不限
+// 好友申请的验证消息长度限制为[1, 20]，字符类型不限
+// 好友申请的对方备注长度限制为[1, 20]，字符类型不限
 // 申请用户不能在好友申请未被处理前，再次向同一用户发送好友申请
 // 申请用户和目标用户不能已经是好友关系，否则不允许发送好友申请
 // 申请用户和目标用户不能是同一个人
@@ -79,6 +79,7 @@ TEST_F(FriendApplicationValidatorTest, 当验证消息长度不合法时_调用v
         "验证消息长度不合法");
 }
 
+
 TEST_F(FriendApplicationValidatorTest, 当对方备注长度不合法时_调用validateSendFriendApplicationInputs_应该抛出异常)
 {
     EXPECT_CALL(friendApplicationRepository, of(testing::_, testing::_, testing::_)).Times(0);
@@ -88,6 +89,13 @@ TEST_F(FriendApplicationValidatorTest, 当对方备注长度不合法时_调用v
         [&]
         {
             validator->validateSendFriendApplicationInputs("ok_msg", "bbbbbbbbbbbbbbbbbbbbb", "100000002");
+        },
+        "对方备注长度不合法");
+
+    tests::utils::expectThrowWithMessage<sys::relation::domain::InvalidRecipientRemarkException>(
+        [&]
+        {
+            validator->validateSendFriendApplicationInputs("ok_msg", "", "100000002");
         },
         "对方备注长度不合法");
 }
@@ -173,7 +181,7 @@ TEST_F(FriendApplicationValidatorTest, 当验证消息长度为20时_调用valid
         validator->validateSendFriendApplicationInputs(message20, "ok_remark", "100000002"));
 }
 
-TEST_F(FriendApplicationValidatorTest, 当对方备注长度为0时_调用validateSendFriendApplicationInputs_应该通过)
+TEST_F(FriendApplicationValidatorTest, 当对方备注长度为1时_调用validateSendFriendApplicationInputs_应该通过)
 {
     EXPECT_CALL(friendApplicationRepository,
                 of(QStringLiteral("100000001"), QStringLiteral("100000002"), sys::relation::domain::ApplicationStatus::
@@ -185,7 +193,7 @@ TEST_F(FriendApplicationValidatorTest, 当对方备注长度为0时_调用valida
         .WillOnce(testing::Return(nullptr));
 
     EXPECT_NO_THROW(
-        validator->validateSendFriendApplicationInputs("ok_msg", "", "100000002"));
+        validator->validateSendFriendApplicationInputs("ok_msg", "1", "100000002"));
 }
 
 TEST_F(FriendApplicationValidatorTest, 当对方备注长度为20时_调用validateSendFriendApplicationInputs_应该通过)

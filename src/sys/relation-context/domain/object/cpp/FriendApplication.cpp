@@ -37,26 +37,6 @@ namespace sys::relation::domain
         return message;
     }
 
-    RecipientRemark::RecipientRemark(const QString& remark)
-        : remark(remark)
-    {
-        if (!checkRecipientRemark(remark))
-        {
-            throw InvalidRecipientRemarkException();
-        }
-    }
-
-    bool RecipientRemark::checkRecipientRemark(const QString& value)
-    {
-        static const QRegularExpression pattern("^[A-Za-z_\\x{4E00}-\\x{9FFF}]{0,20}$");
-        return pattern.match(value).hasMatch();
-    }
-
-    const QString& RecipientRemark::value() const
-    {
-        return remark;
-    }
-
     ApplyingInfo::ApplyingInfo(const QString& applicantUserId,
                                const QString& targetUserId,
                                const QDateTime& applyTime)
@@ -173,12 +153,12 @@ namespace sys::relation::domain
         return applyingInfo.targetId();
     }
 
-    const QString& FriendApplication::verificationMessageValue() const
+    QString FriendApplication::verificationMessageValue() const
     {
         return verificationMessage.value();
     }
 
-    const QString& FriendApplication::recipientRemarkValue() const
+    QString FriendApplication::recipientRemarkValue() const
     {
         return recipientRemark.value();
     }
