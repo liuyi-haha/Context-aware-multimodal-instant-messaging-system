@@ -2,6 +2,7 @@
 // Created by 86150 on 2026/3/28.
 //
 #include <QSqlDatabase>
+#include <QTemporaryFile>
 
 #include "fake/CommonDataBaseFake.h"
 #include "fake/UserApiGatewayFake.h"
@@ -39,13 +40,22 @@ protected:
         applicationService = std::make_unique<sys::user::application::UserApplicationService>(userService.get());
     }
 
-    static contract::user::RegisterRequest buildValidRegisterUserRequest()
+    contract::user::RegisterRequest buildValidRegisterUserRequest()
     {
         contract::user::RegisterRequest request;
         request.nickname = "有效昵称";
         request.phone = "13900139000";
         request.password = "abc_123";
-        request.avatar = QByteArray("avatar");
+        QString avatar = "avatar";
+        // 创建一个临时文件来模拟头像文件
+        if (tempFile.open())
+        {
+            tempFile.write(avatar.toUtf8()); // avatarData 是 QByteArray
+            tempFile.close();
+        }
+
+
+        request.avatarFileInfo = QFileInfo(tempFile.fileName());
         return request;
     }
 
@@ -74,6 +84,7 @@ protected:
     std::unique_ptr<sys::user::domain::UserValidator> userValidator;
     std::unique_ptr<sys::user::domain::UserService> userService;
     std::unique_ptr<sys::user::application::UserApplicationService> applicationService;
+    QTemporaryFile tempFile;
 };
 
 

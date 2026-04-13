@@ -3,6 +3,7 @@
 //
 #include <gtest/gtest.h>
 
+#include "sys/common/component/UserCredentialManager.h"
 #include "sys/relation-context/domain/exception/FriendApplicationAlreadyProcessedException.h"
 #include "sys/relation-context/domain/exception/InvalidRecipientRemarkException.h"
 #include "sys/relation-context/domain/exception/InvalidVerificationMessageException.h"
@@ -24,6 +25,14 @@ protected:
             QStringLiteral("验证消息"),
             QStringLiteral("对方备注"),
             QDateTime::fromSecsSinceEpoch(secsSinceEpoch));
+    }
+
+    void SetUp() override
+    {
+        // 在每个测试用例执行前运行，可以在这里进行一些初始化操作
+        sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token", "刘奕",
+                                                                         "刘奕的头像", "description",
+                                                                         "1234567890");
     }
 };
 

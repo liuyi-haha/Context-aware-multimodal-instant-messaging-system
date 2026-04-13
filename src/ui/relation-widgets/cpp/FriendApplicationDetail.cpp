@@ -15,6 +15,7 @@
 
 #include "contract/system-provider/relation-context-provider/AcceptFriendApplication.h"
 #include "contract/system-provider/relation-context-provider/RejectFriendApplication.h"
+#include "ui/common-widgets/ToastWidget.h"
 #include "ui/common/UIEVentBus.h"
 
 namespace
@@ -268,7 +269,7 @@ namespace ui::relation_widgets
         verificationContentLabel->setText(friendApplicationView.verificationMessage.isEmpty()
                                               ? QStringLiteral("(空白)")
                                               : friendApplicationView.verificationMessage);
-        timeContentLabel->setText(friendApplicationView.applyTime.toString("yyyy-MM-dd HH:mm"));
+        timeContentLabel->setText(friendApplicationView.applyTime.toLocalTime().toString("yyyy-MM-dd HH:mm"));
 
         statusLabel->setText(contract::relation::FriendApplicationView::statusToText(friendApplicationView.status));
         applyStatusStyle(statusLabel, friendApplicationView.status);
@@ -316,9 +317,12 @@ namespace ui::relation_widgets
 
         acceptButton->setEnabled(false);
         rejectButton->setEnabled(false);
+        acceptButton->setText(QStringLiteral("同意中"));
 
         contract::relation::AcceptFriendApplicationRequest request;
         request.applicationId = currentView.applicationId;
+        // todo @liuyi 待完善，后续再让用户输入备注
+        request.recipientRemark = currentView.name;
 
         QtConcurrent::run([service = relationApplicationService, request]()
         {
@@ -327,12 +331,14 @@ namespace ui::relation_widgets
         {
             acceptButton->setEnabled(true);
             rejectButton->setEnabled(true);
+            acceptButton->setText(QStringLiteral("同意"));
 
             if (!response.success)
             {
-                QMessageBox::warning(this,
-                                     QStringLiteral("操作失败"),
-                                     response.errMsg.value_or(QStringLiteral("同意好友申请失败")));
+                common_widgets::ToastWidget::showToast(this,
+                                                       QStringLiteral("操作失败: %1").arg(
+                                                           response.errMsg.value_or(QStringLiteral("同意好友申请失败"))),
+                                                       3000);
                 return;
             }
 
@@ -342,9 +348,13 @@ namespace ui::relation_widgets
             acceptButton->setVisible(false);
             rejectButton->setVisible(false);
 
-            emit ui::common::UIEventBus::instance()->friendApplicationStatusChanged(
+            emit common::UIEventBus::instance()->friendApplicationStatusChanged(
                 currentView.applicationId,
                 currentView.status);
+            if (response.isNewFriendShip && response.privateChatSessionId != "")
+            {
+                emit common::UIEventBus::instance()->chatSessionUpdated(response.privateChatSessionId);
+            }
         });
     }
 
@@ -371,9 +381,11 @@ namespace ui::relation_widgets
 
             if (!response.success)
             {
-                QMessageBox::warning(this,
-                                     QStringLiteral("操作失败"),
-                                     response.errMsg.value_or(QStringLiteral("拒绝好友申请失败")));
+                common_widgets::ToastWidget::showToast(this,
+                                                       QStringLiteral("操作失败: %1").arg(
+                                                           response.errMsg.value_or(QStringLiteral("拒绝好友申请失败"))),
+                                                       3000);
+
                 return;
             }
 

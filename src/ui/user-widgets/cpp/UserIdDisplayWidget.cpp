@@ -125,7 +125,7 @@ namespace ui::user_widgets
         connect(m_goToLoginButton, &QPushButton::clicked, this, [this]
         {
             emit ui::common::UIEventBus::instance()->goToLoginRequested();
-            close();
+            this->deleteLater();
         });
     }
 

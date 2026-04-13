@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <QRegularExpression>
 
+#include "sys/common/component/UserCredentialManager.h"
 #include "sys/relation-context/domain/exception/FriendApplicationAlreadyProcessedException.h"
 #include "sys/relation-context/domain/exception/InvalidApplicantUserIdException.h"
 #include "sys/relation-context/domain/exception/InvalidApplyTimeException.h"
@@ -74,7 +75,7 @@ namespace sys::relation::domain
         : id(friendApplicationId),
           verificationMessage(verificationMessage),
           applyingInfo(applicantUserId, targetUserId, applyTime),
-          recipientRemark(recipientRemark),
+          recipientRemark(recipientRemark, false),
           status(ApplicationStatus::Pending)
     {
         if (friendApplicationId.trimmed().isEmpty())
@@ -90,6 +91,15 @@ namespace sys::relation::domain
                                                             const QString& recipientRemark,
                                                             const QDateTime& applyTime)
     {
+        // 如果是自己发的申请，就要校验remark, 否则不校验remark
+        if (applicantUserId == common::component::UserCredentialManager::instance().getCurrentUserId())
+        {
+            if (!core::RecipientRemark::checkRecipientRemark(recipientRemark))
+            {
+                throw InvalidRecipientRemarkException();
+            }
+        }
+        // 构造时就不要校验了remark了
         return QSharedPointer<FriendApplication>(new FriendApplication(
             friendApplicationId,
             applicantUserId,

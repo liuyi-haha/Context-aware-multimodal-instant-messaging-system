@@ -12,6 +12,8 @@
 #include "contract/system-provider/relation-context-provider/FriendApplicationView.hpp"
 #include "dependencyinjector.h"
 #include "sys/file-context/application/service/include/FileApplicationService.h"
+#include "ui/common-widgets/SoundPlayer.h"
+#include "ui/common-widgets/ToastWidget.h"
 #include "ui/common/UIEVentBus.h"
 
 namespace ui::relation_widgets
@@ -65,6 +67,32 @@ namespace ui::relation_widgets
     void FriendApplicationListModel::insertViewByDateTimeDesc(
         const contract::relation::FriendApplicationView& friendApplication)
     {
+        // 查找是否存在相同 applicationId 的申请
+        int existingRow = -1;
+        for (int i = 0; i < views.size(); ++i)
+        {
+            if (views[i].applicationId == friendApplication.applicationId)
+            {
+                existingRow = i;
+                break;
+            }
+        }
+
+        // 如果存在重复申请，进行替换
+        if (existingRow != -1)
+        {
+            // 更新现有项
+            views[existingRow] = friendApplication;
+            // 通知视图数据已更改
+            const auto index = this->index(existingRow, 0);
+            emit dataChanged(index, index);
+
+            // 重新加载头像
+            loadAvatarAsync(friendApplication.applicationId, friendApplication.peerUserAvatarFileId);
+            return;
+        }
+
+        // 没有重复申请，按申请时间降序插入
         int insertRow = 0;
         while (insertRow < views.size() && views.at(insertRow).applyTime >= friendApplication.applyTime)
         {
@@ -404,11 +432,54 @@ namespace ui::relation_widgets
             emit ui::common::UIEventBus::instance()->friendApplicationSelected(listModel->viewAt(index.row()));
         });
 
+        // 主动发送申请后的更新
         connect(ui::common::UIEventBus::instance(), &ui::common::UIEventBus::friendApplicationStatusChanged,
                 this,
                 [this](const QString& applicationId, const contract::relation::FriendApplicationView::Status status)
                 {
                     listModel->updateStatusByApplicationId(applicationId, status);
+                });
+        connect(ui::common::UIEventBus::instance(), &ui::common::UIEventBus::friendApplicationSent, this,
+                [this](const QString& applicationId)
+                {
+                    QtConcurrent::run([this, applicationId]()-> std::optional<contract::relation::FriendApplicationView>
+                    {
+                        return relationApplicationService->getFriendApplication(applicationId);
+                    }).then(this, [this, applicationId](
+                            const std::optional<contract::relation::FriendApplicationView>& applicationOpt)
+                            {
+                                if (!applicationOpt.has_value())
+                                {
+                                    qDebug() << "FriendApplicationList say: Failed to get friend application for id:" <<
+                                        applicationId;
+                                    return;
+                                }
+                                listModel->insertViewByDateTimeDesc(applicationOpt.value());
+                            });
+                });
+
+        // 收到通知后的更新
+        connect(ui::common::UIEventBus::instance(), &ui::common::UIEventBus::friendApplicationUpdated, this,
+                [this](const QString& applicationId)
+                {
+                    QtConcurrent::run([this, applicationId]()-> std::optional<contract::relation::FriendApplicationView>
+                    {
+                        return relationApplicationService->getFriendApplication(applicationId);
+                    }).then(this, [this, applicationId](
+                            const std::optional<contract::relation::FriendApplicationView>& applicationOpt)
+                            {
+                                if (!applicationOpt.has_value())
+                                {
+                                    qDebug() << "FriendApplicationList say: Failed to get friend application for id:" <<
+                                        applicationId;
+                                    return;
+                                }
+
+                                // todo @liuyi 这里后续还要从通知上下文处获取未读消息数量，先不做了
+                                listModel->insertViewByDateTimeDesc(applicationOpt.value());
+                                common_widgets::ToastWidget::showToast(this, "收到好友申请通知");
+                                common_widgets::SoundPlayer::play();
+                            });
                 });
     }
 }

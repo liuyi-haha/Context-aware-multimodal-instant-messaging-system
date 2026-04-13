@@ -1,6 +1,8 @@
 #pragma once
 #include <QStackedWidget>
 
+#include "ui/message-widgets/include/MessagePanel.h"
+
 namespace contract::relation
 {
     class FriendApplicationView;
@@ -30,9 +32,13 @@ namespace ui::main_widgets
 
     private:
         void setupConnections();
+        message_widgets::MessagePanel* getMessagePanel(const QString& chatSessionId);
+        message_widgets::MessageListWidget* findMessageListWidgetInMessagePanel(
+            message_widgets::MessagePanel* messagePanel);
 
     private:
         ui::relation_widgets::FriendApplicationDetail* m_friendApplicationDetail = nullptr;
         QHash<QString, int> chatSessionIdToPageIndex;
+        sys::message::application::MessageApplicationService* messageApplicationService = QInjection::Inject;
     };
 } // namespace ui::main_widgets

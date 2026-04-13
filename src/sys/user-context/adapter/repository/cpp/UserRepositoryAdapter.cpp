@@ -23,8 +23,8 @@ namespace sys::user::adapter
                 "id TEXT PRIMARY KEY,"
                 "nickname TEXT NOT NULL,"
                 "avatar_file_id TEXT NOT NULL,"
-                "phone TEXT NOT NULL UNIQUE,"
-                "description TEXT NOT NULL"
+                "phone TEXT,"
+                "description TEXT"
                 ")"))
             {
                 throw core::InfraException("用户表初始化失败: " + query.lastError().text());

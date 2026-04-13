@@ -28,6 +28,7 @@ namespace sys::relation::domain
         void handle(FriendApplicationAccepted friendApplicationAccepted) override;
 
         QList<QSharedPointer<PrivateChatSession>> getPrivateChatSessions();
+        QSharedPointer<PrivateChatSession> getPrivateChatSession(const QString& chatSessionId);
         void checkCurrentUserHasPermissionToSendMessage(const QString& chatSessionId); // 如果没有权限则抛异常
 
     private:

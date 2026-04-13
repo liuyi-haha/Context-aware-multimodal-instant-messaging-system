@@ -9,6 +9,7 @@
 #include <QPainterPath>
 #include <QFont>
 #include <QTextDocument>
+#include <QElapsedTimer>
 #include <QApplication>
 
 #include "MessageListModel.h"
@@ -18,6 +19,10 @@ namespace ui::message_widgets
     class MessageDelegate : public QStyledItemDelegate
     {
         Q_OBJECT
+
+    private:
+        mutable QHash<QString, std::shared_ptr<QTextDocument>> m_textDocCache;
+        static constexpr int MAX_CACHE_SIZE = 100;
 
     public:
         explicit MessageDelegate(QObject* parent = nullptr)
@@ -58,6 +63,19 @@ namespace ui::message_widgets
         void paint(QPainter* painter, const QStyleOptionViewItem& option,
                    const QModelIndex& index) const override
         {
+            static QElapsedTimer timer;
+            static int frameCount = 0;
+            if (!timer.isValid()) timer.start(); // 首次启动
+
+            if (timer.elapsed() > 1000)
+            {
+                qDebug() << "滚动帧率:" << frameCount << "FPS";
+                frameCount = 0;
+                timer.restart();
+            }
+            frameCount++;
+
+
             if (!index.isValid())
                 return;
 
@@ -385,20 +403,34 @@ namespace ui::message_widgets
         void drawTextContent(QPainter* painter, const QRect& rect, const QModelIndex& index) const
         {
             QString content = index.data(MessageListModel::ContentRole).toString();
+            QString cacheKey = content + QString::number(rect.width());
+
+            // 从缓存获取或创建 QTextDocument
+            auto it = m_textDocCache.find(cacheKey);
+            if (it == m_textDocCache.end())
+            {
+                auto doc = std::make_shared<QTextDocument>();
+                QFont font;
+                font.setPointSize(CONTENT_FONT_SIZE);
+                font.setFamily("Microsoft YaHei");
+                doc->setDefaultFont(font);
+                doc->setPlainText(content);
+                doc->setTextWidth(rect.width());
+                // 限制缓存大小
+                if (m_textDocCache.size() > MAX_CACHE_SIZE)
+                {
+                    m_textDocCache.clear();
+                }
+                m_textDocCache[cacheKey] = doc;
+                it = m_textDocCache.find(cacheKey);
+            }
 
             painter->save();
             painter->setPen(Qt::black);
 
-            QTextDocument doc;
-            QFont font;
-            font.setPointSize(CONTENT_FONT_SIZE);
-            font.setFamily("Microsoft YaHei");
-            doc.setDefaultFont(font);
-            doc.setPlainText(content);
-            doc.setTextWidth(rect.width());
 
             painter->translate(rect.topLeft());
-            doc.drawContents(painter);
+            it.value()->drawContents(painter);
             painter->restore();
         }
 
@@ -523,25 +555,26 @@ namespace ui::message_widgets
 
         QString formatTime(const QDateTime& time) const
         {
+            QDateTime localTime = time.toLocalTime();
             QDateTime now = QDateTime::currentDateTime();
 
-            if (time.date() == now.date())
+            if (localTime.date() == now.date())
             {
-                return time.toString("hh:mm");
+                return localTime.toString("hh:mm");
             }
-            else if (time.date().addDays(1) == now.date())
+            else if (localTime.date().addDays(1) == now.date())
             {
-                return QString("昨天 %1").arg(time.toString("hh:mm"));
+                return QString("昨天 %1").arg(localTime.toString("hh:mm"));
             }
             else
             {
-                return time.toString("MM-dd hh:mm");
+                return localTime.toString("MM-dd hh:mm");
             }
         }
 
         // 字体大小常量（硬编码）
-        static constexpr int CONTENT_FONT_SIZE = 12; // 内容字体大小
-        static constexpr int HEADER_FONT_SIZE = 10; // 头部字体大小（昵称和时间）
+        static constexpr int CONTENT_FONT_SIZE = 10; // 内容字体大小
+        static constexpr int HEADER_FONT_SIZE = 8; // 头部字体大小（昵称和时间）
 
         // 常量
         static constexpr int HORIZONTAL_MARGIN = 12;
@@ -555,7 +588,7 @@ namespace ui::message_widgets
         static constexpr int MAX_IMAGE_HEIGHT = 200;
         static constexpr int FILE_HEIGHT = 60;
         static constexpr int AUDIO_HEIGHT = 50;
-        static constexpr int MIN_BUBBLE_WIDTH = 60;
+        static constexpr int MIN_BUBBLE_WIDTH = 90;
         static constexpr float MAX_BUBBLE_WIDTH_RATIO = 0.6f;
     };
 }

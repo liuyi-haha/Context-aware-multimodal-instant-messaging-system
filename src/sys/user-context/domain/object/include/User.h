@@ -78,6 +78,16 @@ namespace sys::user::domain
         QString phoneValue();
         QString descriptionValue();
 
+        QString getAvatarFileId()
+        {
+            return avatar.avatarFileId();
+        }
+
+        QByteArray getAvatarData()
+        {
+            return avatar.avatarData().value_or(QByteArray());
+        }
+
     private:
         User(const QString& userId, const QString& nickname, const QString& phone, const QByteArray& avatar,
              const QString& avatarFileId, const QString& description)

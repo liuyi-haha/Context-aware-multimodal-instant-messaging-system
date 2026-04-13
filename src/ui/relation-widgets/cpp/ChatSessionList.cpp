@@ -72,6 +72,43 @@ namespace ui::relation_widgets
         return views.at(row);
     }
 
+    void ChatSessionListModel::insertViewByLastMessageSendTimeDesc(const contract::relation::ChatSessionView& view)
+    {
+        // 查找插入位置（按最后消息发送时间降序）
+        int insertPos = 0;
+        for (; insertPos < views.size(); ++insertPos)
+        {
+            if (views[insertPos].lastMessageSendTime < view.lastMessageSendTime)
+            {
+                break;
+            }
+        }
+
+        // 如果相同会话ID已存在，则先移除旧的
+        for (int i = 0; i < views.size(); ++i)
+        {
+            if (views[i].chatSessionId == view.chatSessionId)
+            {
+                beginRemoveRows(QModelIndex(), i, i);
+                views.removeAt(i);
+                endRemoveRows();
+                // 调整插入位置
+                if (i < insertPos)
+                {
+                    insertPos--;
+                }
+                break;
+            }
+        }
+        // 插入新数据
+        beginInsertRows(QModelIndex(), insertPos, insertPos);
+        views.insert(insertPos, view);
+        endInsertRows();
+
+        // 异步加载头像
+        loadAvatarAsync(view.chatSessionId, view.avatarFileId);
+    }
+
 
     void ChatSessionListModel::loadAvatarAsync(const QString& chatSessionId, const QString& avatarFileId)
     {
@@ -246,6 +283,25 @@ namespace ui::relation_widgets
         painter->drawText(summaryRect, Qt::AlignLeft | Qt::AlignVCenter, summary);
     }
 
+    QString formatTime(const QDateTime& time)
+    {
+        QDateTime localTime = time.toLocalTime();
+        QDateTime now = QDateTime::currentDateTime();
+
+        if (localTime.date() == now.date())
+        {
+            return localTime.toString("hh:mm");
+        }
+        else if (localTime.date().addDays(1) == now.date())
+        {
+            return QString("昨天 %1").arg(localTime.toString("hh:mm"));
+        }
+        else
+        {
+            return localTime.toString("MM-dd hh:mm");
+        }
+    }
+
     void ChatSessionModelDelegate::drawSendTime(QPainter* painter, const QDateTime& sendTime, const QRect& timeRect)
     {
         QFont timeFont = painter->font();
@@ -255,9 +311,10 @@ namespace ui::relation_widgets
         painter->setFont(timeFont);
         painter->setPen(QColor(145, 145, 145));
 
-        const QString text = sendTime.isValid() ? sendTime.toString("HH:mm") : QString();
+        const QString text = formatTime(sendTime);
         painter->drawText(timeRect, Qt::AlignRight | Qt::AlignVCenter, text);
     }
+
 
     void ChatSessionModelDelegate::drawUnreadBadge(QPainter* painter, const int unreadCount,
                                                    const QRect& unreadBadgeRect)
@@ -362,6 +419,24 @@ namespace ui::relation_widgets
         {
             emit ui::common::UIEventBus::instance()->chatSessionSelected(listModel->viewAt(index.row()));
         });
+        connect(ui::common::UIEventBus::instance(), &ui::common::UIEventBus::chatSessionUpdated, this,
+                [this](const QString& chatSessionId)
+                {
+                    QtConcurrent::run([this, chatSessionId]()-> std::optional<contract::relation::ChatSessionView>
+                    {
+                        // todo @Liuyi 获取聊天会话
+                        return relationApplicationService->getChatSession(chatSessionId);
+                    }).then(this, [this, chatSessionId](const std::optional<contract::relation::ChatSessionView>& data)
+                    {
+                        if (!data.has_value())
+                        {
+                            qDebug() << "Failed to load chat session data for chatSessionId:" << chatSessionId;
+                            return;
+                        }
+                        auto view = data.value();
+                        listModel->insertViewByLastMessageSendTimeDesc(view);
+                    });
+                });
     }
 }
 

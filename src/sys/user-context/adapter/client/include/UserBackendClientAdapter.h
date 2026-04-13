@@ -53,7 +53,7 @@ namespace sys::user::adapter
         }
 
         RegisterUserResult registerUser(const QString& hashedPassword, const QString& nickname,
-                                        const QString& phone, const QByteArray& avatar) override;
+                                        const QString& phone, const QFileInfo& avatarFileInfo) override;
         QSharedPointer<domain::User> searchUser(const QString& account) override;
 
     private:

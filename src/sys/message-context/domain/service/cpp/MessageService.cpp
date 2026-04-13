@@ -35,4 +35,18 @@ namespace sys::message::domain
         }
         return messageRepository->ofRecentMessages(chatSessionId, count);
     }
+
+    void MessageService::receiveTextMessage(const QString& sessionId, const QString& messageId,
+                                            int seqInSession, const QString& senderUserId, const QString& textContent,
+                                            const QDateTime& sendTime)
+    {
+        // 创建消息，保存消息
+        auto message = Message::ofTextMessage(messageId, sessionId, seqInSession, sendTime, senderUserId, textContent);
+        messageRepository->save(message);
+    }
+
+    QSharedPointer<Message> MessageService::getMessage(const QString& messageId)
+    {
+        return messageRepository->of(messageId);
+    }
 }

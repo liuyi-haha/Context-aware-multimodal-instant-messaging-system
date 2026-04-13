@@ -33,6 +33,7 @@ namespace ui::relation_widgets
 
         void setViews(const QList<contract::relation::ChatSessionView>& sortedChatSessions);
         contract::relation::ChatSessionView viewAt(int row) const;
+        void insertViewByLastMessageSendTimeDesc(const contract::relation::ChatSessionView& view);
 
     private:
         QList<contract::relation::ChatSessionView> views;

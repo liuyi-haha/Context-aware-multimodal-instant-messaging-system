@@ -22,80 +22,52 @@
 #include <QApplication>
 
 #include "dependencypointer.h"
+#include "common/EventBus.h"
 #include "sys/common/component/UserCredentialManager.h"
 #include "sys/relation-context/domain/object/include/FriendApplication.h"
 #include "sys/relation-context/port/repository/include/FriendApplicationRepository.h"
 #include "sys/starter/include/AppStarter.h"
+#include "ui/auth-widgets/include/LoginWidget.h"
+#include "ui/common/UIEVentBus.h"
 #include "ui/main-widgets/include/MainWindow.h"
 #include "ui/relation-widgets/include/FriendApplicationList.h"
 #include "ui/main-widgets/include/MiddleStack.h"
 #include "ui/user-widgets/include/RegisterWidget.h"
+#include <QObject>
 
-void seedApplication(const QString& friendApplicationId,
-                     const QString& applicantUserId,
-                     const QString& targetUserId,
-                     const QString& verificationMessage,
-                     const QString& recipientRemark,
-                     const QDateTime& applyTime,
-                     const sys::relation::domain::ApplicationStatus status)
-{
-    const auto application = sys::relation::domain::FriendApplication::of(
-        applicantUserId,
-        friendApplicationId,
-        targetUserId,
-        verificationMessage,
-        recipientRemark,
-        applyTime);
-
-    QInjection::Pointer<sys::relation::port::FriendApplicationRepository> friendApplicationRepository;
-    if (status == sys::relation::domain::ApplicationStatus::Accepted)
-    {
-        application->accept();
-    }
-    else if (status == sys::relation::domain::ApplicationStatus::Rejected)
-    {
-        application->reject();
-    }
-
-    friendApplicationRepository->save(application);
-}
-
-// void setDatas()
-// {
-//     seedApplication("FA-MIX-5", "100000001", "100000002", "v5", "self_pending",
-//                     QDateTime(QDate(2026, 3, 30), QTime(15, 0, 0), Qt::UTC),
-//                     sys::relation::domain::ApplicationStatus::Pending);
-//     seedApplication("FA-MIX-4", "100000003", "100000001", "vfour", "other_pending",
-//                     QDateTime(QDate(2026, 3, 30), QTime(14, 0, 0), Qt::UTC),
-//                     sys::relation::domain::ApplicationStatus::Pending);
-//     seedApplication("FA-MIX-3", "100000001", "100000004", "v3", "self_accepted",
-//                     QDateTime(QDate(2026, 3, 30), QTime(13, 0, 0), Qt::UTC),
-//                     sys::relation::domain::ApplicationStatus::Accepted);
-//     seedApplication("FA-MIX-2", "100000002", "100000001", "v2", "other_rejected",
-//                     QDateTime(QDate(2026, 3, 30), QTime(12, 0, 0), Qt::UTC),
-//                     sys::relation::domain::ApplicationStatus::Rejected);
-//     seedApplication("FA-MIX-1", "100000004", "100000001", "v1", "other_accepted",
-//                     QDateTime(QDate(2026, 3, 30), QTime(11, 0, 0), Qt::UTC),
-//                     sys::relation::domain::ApplicationStatus::Accepted);
-// }
+#include "Controller.h"
+#include "ui/relation-widgets/include/FriendAddingWidget.h"
 
 
 int main(int argc, char* argv[])
 {
     // 设置currentUserId，模拟用户登录状态
-    sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token", "刘奕",
-                                                                     "刘奕的头像", "description",
-                                                                     "1234567890");
+    // sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token", "刘奕",
+    //                                                                  "刘奕的头像", "description",
+    //                                                                  "1234567890"
+    // );
     QApplication a(argc, argv);
 
-    //sys::common::component::UserCredentialManager::instance().update("100000001", "mock_token");
     sys::starter::AppStarter::bootstrap();
-    //setDatas();
-    auto w = new ui::main_widgets::MainWindow;
+    // sys::common::component::UserCredentialManager::instance().update("506647664",
+    //                                                                  "6afb09fc39aeb7894d8702fa6cb1290f74b1b737a83445f717f5e75cdce2da98",
+    //                                                                  "发送者",
+    //                                                                  "2QsKiugULKa", "",
+    //                                                                  "15091772572"
+    // );
+    Controller controller;
+    controller.start();
+    ui::common_widgets::SoundPlayer::play();
 
-    w->show();
+    // contract::user::UserView userView;
+    // userView.userId = "100000001";
+    // userView.nickname = "刘奕";
+    // userView.avatarFileId = "毛毛的头像";
+    // auto widget = new ui::user_widgets::FriendAddingWidget(userView);
+    // widget->show();
     return a.exec();
 }
+
 
 // class Base : public QObject
 // {

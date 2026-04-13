@@ -53,6 +53,8 @@ namespace sys::message::application
         // 获取聊天会话中seq序号之前的N条消息，返回的消息列表中不包含seq序号对应的消息
         QList<contract::message::MessageView> getMessagesBefore(const QString& chatSessionId, int count, int seq);
         contract::message::SendTextMessageResponse sendTextMessage(const QString& chatSessionId, const QString& text);
+        void handleMessageReceived(const QByteArray& bytes);
+        std::optional<contract::message::MessageView> getMessage(const QString& messageId);
 
     private:
         MessageViewAssembler* messageViewAssembler = QInjection::Inject;

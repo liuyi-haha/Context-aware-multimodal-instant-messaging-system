@@ -4,7 +4,9 @@
 
 #include "../include/MessageApplicationService.h"
 
+#include "notifications.pb.h"
 #include "sys/message-context/domain/object/include/Message.h"
+#include "ui/common/UIEVentBus.h"
 
 namespace sys
 {
@@ -116,6 +118,54 @@ namespace sys
                 response.errMsg = QString::fromUtf8(ex.what());
             }
             return response;
+        }
+
+        void MessageApplicationService::handleMessageReceived(const QByteArray& bytes)
+        {
+            // 先反序列化
+            try
+            {
+                // 先反序列化
+                proto::notification::MessageReceivedNotification notification;
+                assert(notification.ParseFromArray(bytes.data(), bytes.size()));
+                // todo @liuyi 后续扩展其它类型
+                assert(notification.message_type() == proto::notification::MESSAGE_TYPE_TEXT);
+
+
+                QString sessionId = QString::fromStdString(notification.session_id());
+                QString messageId = QString::fromStdString(notification.message_id());
+                int seqInSession = notification.seq_in_session();
+                QString senderUserId = QString::fromStdString(notification.sender_user_id());
+                QString textContent = QString::fromStdString(notification.text_content());
+                QDateTime sendTime = QDateTime::fromString(QString::fromStdString(notification.send_time()),
+                                                           Qt::ISODate);
+                // 再调用领域服务的方法
+                messageService->receiveTextMessage(sessionId, messageId, seqInSession, senderUserId, textContent,
+                                                   sendTime);
+
+                // 发送信号，通知消息列表更新
+                qDebug() << "MessageApplicationService::handleMessageReceived: 收到消息通知，发送messageReceived信号，sessionId:" <<
+                    sessionId << "messageId:" << messageId << "senderUserId:" << senderUserId << "textContent:" <<
+                    textContent;
+                emit ui::common::UIEventBus::instance()->messageReceived(sessionId, messageId);
+                // 发送信号，通知ChatSessionList更新会话列表
+                emit ui::common::UIEventBus::instance()->chatSessionUpdated(sessionId);
+            }
+            catch (const std::exception& ex)
+            {
+                qDebug() << "处理好友申请通知时发生异常:" << QString::fromStdString(ex.what());
+            }
+        }
+
+        std::optional<contract::message::MessageView> MessageApplicationService::getMessage(const QString& messageId)
+        {
+            auto message = messageService->getMessage(messageId);
+            if (message == nullptr)
+            {
+                qDebug() << "MessageService say: message not found for id:" << messageId;
+                return std::nullopt;
+            }
+            return messageViewAssembler->assemble(message);
         }
 
         bool MessageApplicationService::checkConfigAndSetResponse(contract::BaseResponse& response)

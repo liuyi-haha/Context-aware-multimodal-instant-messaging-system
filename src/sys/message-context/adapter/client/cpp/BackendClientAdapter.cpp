@@ -8,6 +8,7 @@
 #include <QNetworkAccessManager>
 
 #include "OAIChatDefaultApi.h"
+#include "sys/common/component/UserCredentialManager.h"
 #include "sys/common/exception/InfraExcception.h"
 #include "sys/message-context/domain/exception/ChatSessionNotFoundException.h"
 #include "sys/message-context/domain/exception/FriendShipNotFoundException.h"
@@ -111,6 +112,7 @@ namespace sys::message::adapter
         OpenAPIChat::OAIChatSendTextMessage_200_response response;
 
         OpenAPIChat::OAIChatDefaultApi api;
+        api.setBearerToken(common::component::UserCredentialManager::instance().getCurrentToken());
         QNetworkAccessManager manager;
         api.setNetworkAccessManager(&manager);
         api.setTimeOut(8000);

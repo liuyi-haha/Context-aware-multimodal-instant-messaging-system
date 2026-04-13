@@ -1,9 +1,4 @@
-//
-// Created by 86150 on 2026/4/3.
-//
-
 #pragma once
-
 #include <QDialog>
 #include <QWidget>
 #include <QVBoxLayout>
@@ -13,6 +8,10 @@
 #include <QPushButton>
 #include <QListWidget>
 #include <QtConcurrent/QtConcurrent>
+#include "sys/user-context/application/service/include/UserApplicationService.h"
+#include "ui/common-widgets/ToastWidget.h"
+#include "ui/relation-widgets/include/FriendAddingWidget.h"
+#include "contract/system-provider/user-context-provider/UserView.hpp"
 
 namespace ui::user_widgets
 {
@@ -29,40 +28,33 @@ namespace ui::user_widgets
         QLineEdit* m_searchBox;
         QPushButton* m_searchBtn;
 
-        QListWidget* m_resultList;
+        QWidget* m_resultContainer; // 结果容器
+        QVBoxLayout* m_resultLayout; // 结果区域的布局管理器
+        FriendAddingWidget* m_friendAddingWidget;
 
-        QFutureWatcher<void>* m_searchWatcher;
+        sys::user::application::UserApplicationService* userApplicationService = QInjection::Inject;
 
     public:
         explicit SearchWindow(QWidget* parent = nullptr)
-            : QDialog(parent),
-              m_searchWatcher(nullptr)
+            : QDialog(parent)
+              , m_friendAddingWidget(nullptr)
         {
             setupUI();
             setupConnections();
-            setModal(true); // 模态对话框，不关闭前不能操作其他窗口
-        }
-
-        ~SearchWindow()
-        {
-            if (m_searchWatcher)
-            {
-                m_searchWatcher->cancel();
-                delete m_searchWatcher;
-            }
+            setModal(true);
         }
 
         void setSearchText(const QString& text)
         {
             m_searchBox->setText(text);
-            onSearchClicked(); // 自动触发搜索
+            onSearchClicked();
         }
 
     protected:
         void showEvent(QShowEvent* event) override
         {
             QDialog::showEvent(event);
-            m_searchBox->setFocus(); // 显示时自动聚焦到搜索框
+            m_searchBox->setFocus();
         }
 
     private:
@@ -93,13 +85,13 @@ namespace ui::user_widgets
             createTitleBar();
             centralLayout->addWidget(m_titleBar);
 
-            // 搜索区域
+            // 搜索区域（固定高度）
             createSearchArea();
             centralLayout->addWidget(m_searchArea);
 
-            // 结果列表
-            createResultList();
-            centralLayout->addWidget(m_resultList);
+            // 结果区域（占据剩余空间）
+            createResultArea();
+            centralLayout->addWidget(m_resultContainer, 1); // stretch factor = 1
 
             mainLayout->addWidget(centralWidget);
         }
@@ -194,25 +186,24 @@ namespace ui::user_widgets
             searchLayout->addWidget(m_searchBtn);
         }
 
-        void createResultList()
+        void createResultArea()
         {
-            m_resultList = new QListWidget();
-            m_resultList->setStyleSheet(R"(
-                QListWidget {
-                    border: none;
-                    outline: none;
-                    background-color: white;
-                    border-bottom-left-radius: 8px;
-                    border-bottom-right-radius: 8px;
-                }
-                QListWidget::item {
-                    padding: 10px;
-                    border-bottom: 1px solid #f0f0f0;
-                }
-                QListWidget::item:hover {
-                    background-color: rgb(247, 247, 247);
-                }
-            )");
+            m_resultContainer = new QWidget();
+            m_resultContainer->setStyleSheet("background-color: white;");
+            m_resultLayout = new QVBoxLayout(m_resultContainer);
+            m_resultLayout->setContentsMargins(0, 0, 0, 0);
+            m_resultLayout->setSpacing(0);
+        }
+
+        void clearResult()
+        {
+            // 移除并删除旧的 FriendAddingWidget
+            if (m_friendAddingWidget)
+            {
+                m_resultLayout->removeWidget(m_friendAddingWidget);
+                m_friendAddingWidget->deleteLater();
+                m_friendAddingWidget = nullptr;
+            }
         }
 
         void setupConnections()
@@ -230,40 +221,54 @@ namespace ui::user_widgets
                 return;
             }
 
+            // 清空之前的结果
+            clearResult();
+
             // 按钮置灰，文字改为"搜索中"
             m_searchBtn->setEnabled(false);
             m_searchBtn->setText("搜索中");
 
-            // 清空之前的结果
-            m_resultList->clear();
-
-            // 异步搜索
-            QFuture<void> future = QtConcurrent::run([this, keyword]()
+            contract::user::SearchUserRequest request;
+            request.keyword = keyword;
+            QtConcurrent::run([this, request]()
             {
-                // TODO: 调用搜索接口
-                // return searchUsers(keyword);
-            });
-
-            m_searchWatcher = new QFutureWatcher<void>();
-            connect(m_searchWatcher, &QFutureWatcher<void>::finished, this, [this]()
+                const auto response = userApplicationService->searchUser(request);
+                return response;
+            }).then(this, [this](const contract::user::SearchUserResponse& response)
             {
-                // 恢复按钮
+                // 恢复按钮状态
                 m_searchBtn->setEnabled(true);
                 m_searchBtn->setText("搜索");
 
-                // TODO: 渲染数据
-                // renderResults();
-                m_searchWatcher->deleteLater();
-                m_searchWatcher = nullptr;
-            });
+                if (!response.success)
+                {
+                    common_widgets::ToastWidget::showToast(this, response.errMsg.value_or(""));
+                    return;
+                }
 
-            m_searchWatcher->setFuture(future);
+                if (response.userView.has_value())
+                {
+                    renderResults(response.userView.value());
+                }
+                else
+                {
+                    common_widgets::ToastWidget::showToast(this, "该用户不在");
+                }
+            });
         }
 
-        // TODO: 渲染搜索结果
-        void renderResults()
+        void renderResults(const contract::user::UserView& userView)
         {
-            // 根据搜索结果填充 m_resultList
+            // 确保之前的 widget 已被清理
+            clearResult();
+            // 创建新的 FriendAddingWidget
+            m_friendAddingWidget = new FriendAddingWidget(userView, this);
+
+            // 添加到布局管理器中，占据所有剩余空间
+            m_resultLayout->addWidget(m_friendAddingWidget);
+
+            // 可选：设置 widget 的大小策略，使其能够填充整个空间
+            m_friendAddingWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         }
     };
-} // namespace ui::search_widgets
+} // namespace ui::user_widgets

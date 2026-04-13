@@ -9,8 +9,14 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QPainterPath>
 #include <QPixmap>
 #include "contract/system-provider/user-context-provider/UserView.hpp"
+#include "sys/file-context/application/service/include/FileApplicationService.h"
+#include <QPixmap>
+
+#include "AddFriendRequestWidget.h"
+#include "ui/common/UIEVentBus.h"
 
 // todo @liuyi
 namespace ui::user_widgets
@@ -20,6 +26,8 @@ namespace ui::user_widgets
         Q_OBJECT
 
     public:
+        FileApplicationService* fileApplicationService = QInjection::Inject;
+
         explicit FriendAddingWidget(const contract::user::UserView& userView, QWidget* parent = nullptr)
             : QWidget(parent),
               m_userView(userView)
@@ -29,10 +37,45 @@ namespace ui::user_widgets
             createLayout();
             setupConnections();
             updateUserInfo();
+
+            // 异步加载头像
+            QtConcurrent::run([this]()
+            {
+                return fileApplicationService->getFile(m_userView.avatarFileId);
+            }).then(this, [this](const QByteArray& avatarData)
+            {
+                m_avatarLabel->setPixmap(roundAvatar(avatarData, m_avatarLabel->size()));
+            });
         }
 
-    signals:
-        void addFriendRequested(const QString& userId); // 申请好友信号
+        QPixmap roundAvatar(const QByteArray& avatarBytes, const QSize& size)
+        {
+            QPixmap source(size);
+            source.fill(QColor(220, 220, 220));
+
+            if (!avatarBytes.isEmpty())
+            {
+                QPixmap loaded;
+                if (loaded.loadFromData(avatarBytes))
+                {
+                    source = loaded.scaled(size, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                }
+            }
+
+            QPixmap rounded(size);
+            rounded.fill(Qt::transparent);
+
+            QPainter painter(&rounded);
+            painter.setRenderHint(QPainter::Antialiasing, true);
+            painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+            QPainterPath path;
+            path.addRoundedRect(QRect(QPoint(0, 0), size), 8, 8);
+            painter.setClipPath(path);
+            painter.drawPixmap(0, 0, source);
+
+            return rounded;
+        }
 
     protected:
         void resizeEvent(QResizeEvent* event) override
@@ -146,8 +189,10 @@ namespace ui::user_widgets
         {
             connect(m_addFriendBtn, &QPushButton::clicked, this, [this]()
             {
-                emit addFriendRequested(m_userView.userId);
-                close();
+                auto addFriendRequestWidget = new relation_widgets::AddFriendRequestWidget(
+                    m_nameLabel->text(), m_userIdLabel->text(), this);
+                addFriendRequestWidget->setAttribute(Qt::WA_DeleteOnClose);
+                addFriendRequestWidget->show();
             });
         }
 
@@ -156,7 +201,7 @@ namespace ui::user_widgets
             // 设置昵称
             m_nameLabel->setText(m_userView.nickname);
             // 设置用户ID
-            m_userIdLabel->setText(QString("ID: %1").arg(m_userView.userId));
+            m_userIdLabel->setText(m_userView.userId);
 
             // 设置头像
             if (m_userView.avatar.has_value())

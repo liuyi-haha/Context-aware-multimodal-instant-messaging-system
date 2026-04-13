@@ -23,7 +23,8 @@ namespace ui::auth_widgets
         explicit LoginWidget(
             QWidget* parent = nullptr,
             sys::auth::application::AuthApplicationService* authApplicationService = QInjection::Inject,
-            sys::notification::application::NotificationApplicationService* notificationApplicationService = QInjection::Inject);
+            sys::notification::application::NotificationApplicationService* notificationApplicationService =
+                QInjection::Inject);
 
     private:
         void createSubWidgets();
@@ -31,7 +32,6 @@ namespace ui::auth_widgets
         void initializeStyle();
         void setupConnections();
         void setSubmitting(bool submitting);
-        void tickLoginLoading();
         void submitLogin();
         void goToRegister();
 
@@ -41,9 +41,7 @@ namespace ui::auth_widgets
         QLineEdit* m_passwordEdit;
         QPushButton* m_loginButton;
         QPushButton* m_goToRegisterLink;
-        QTimer* m_loginLoadingTimer;
         bool m_isSubmitting;
-        int m_loadingFrameIndex;
         sys::auth::application::AuthApplicationService* m_authApplicationService;
         sys::notification::application::NotificationApplicationService* m_notificationApplicationService;
     };

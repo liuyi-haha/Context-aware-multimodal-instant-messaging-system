@@ -51,7 +51,7 @@ namespace tests::user::fake
             FakeUserProfile user;
             user.userId = QString::number(nextGeneratedUserId++);
             user.nickname = nickname;
-            user.avatarFileId = QString();
+            user.avatarFileId = "avatar_file_id";
             user.phone = phone;
             user.description = QString();
 
@@ -59,8 +59,9 @@ namespace tests::user::fake
 
             OpenAPIUser::OAIUserRegisterUser_200_response_data data;
             bool ok = false;
-            const int generatedUserId = user.userId.toInt(&ok);
-            data.setUserId(ok ? generatedUserId : 0);
+            const QString generatedUserId = user.userId;
+            data.setUserId(generatedUserId);
+            data.setAvatarFileId(user.avatarFileId);
             response.setSuccess(true);
             response.setData(data);
             response.setErrMsg(QString());

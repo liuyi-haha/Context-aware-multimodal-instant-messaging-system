@@ -4,7 +4,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8080/api
+  - url: http://localhost:8080/api/auth-server
 
 # 定义认证方式
 components:
@@ -26,7 +26,7 @@ components:
       description: 网关从Token解析后注入的用户ID（客户端无需传递）
 
 paths:
-  /auth/login:
+  /login:
     post:
       operationId: login
       description: 用户登录，成功后返回userId 和 token

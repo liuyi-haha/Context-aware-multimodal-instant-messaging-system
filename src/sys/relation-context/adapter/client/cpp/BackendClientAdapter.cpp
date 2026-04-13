@@ -5,6 +5,7 @@
 #include <QNetworkAccessManager>
 
 #include "OAIChatDefaultApi.h"
+#include "sys/common/component/UserCredentialManager.h"
 #include "sys/common/exception/InfraExcception.h"
 #include "sys/relation-context/domain/exception/FriendApplicationAlreadyProcessedException.h"
 #include "sys/relation-context/domain/exception/FriendApplicationNotFoundException.h"
@@ -31,6 +32,8 @@ namespace sys::relation::adapter
         OpenAPIChat::OAIChatSendFriendApplication_200_response response;
 
         OpenAPIChat::OAIChatDefaultApi api;
+        // 设置 token
+        api.setBearerToken(sys::common::component::UserCredentialManager::instance().getCurrentToken());
         QNetworkAccessManager manager;
         api.setNetworkAccessManager(&manager);
         api.setTimeOut(8000);
@@ -106,6 +109,7 @@ namespace sys::relation::adapter
         OpenAPIChat::OAIChatAcceptFriendApplication_200_response response;
 
         OpenAPIChat::OAIChatDefaultApi api;
+        api.setBearerToken(sys::common::component::UserCredentialManager::instance().getCurrentToken());
         QNetworkAccessManager manager;
         api.setNetworkAccessManager(&manager);
         api.setTimeOut(8000);
@@ -149,6 +153,7 @@ namespace sys::relation::adapter
         OpenAPIChat::OAIChatRejectFriendApplication_200_response response;
 
         OpenAPIChat::OAIChatDefaultApi api;
+        api.setBearerToken(sys::common::component::UserCredentialManager::instance().getCurrentToken());
         QNetworkAccessManager manager;
         api.setNetworkAccessManager(&manager);
         api.setTimeOut(8000);

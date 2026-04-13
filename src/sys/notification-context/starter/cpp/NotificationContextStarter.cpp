@@ -9,12 +9,12 @@
 
 namespace sys::notification::starter
 {
-
     void NotificationContextStarter::bootstrap()
     {
         QInjection::addSingleton(new adapter::NotificationConnectionManager());
         QInjection::addSingleton(new adapter::ConnectionStatusChangedEventPublisherAdapter());
         QInjection::addSingleton(new application::NotificationApplicationService);
+        QInjection::addSingleton(new application::BackendEventHandler);
+        QInjection::addSingleton(new remote::BackendEventSubscriber);
     }
-
 }

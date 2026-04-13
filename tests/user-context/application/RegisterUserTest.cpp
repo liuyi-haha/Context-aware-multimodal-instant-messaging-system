@@ -60,7 +60,7 @@ TEST_F(UserApplicationServiceTestFixture, 注册用户时_如果密码不合法_
 TEST_F(UserApplicationServiceTestFixture, 注册用户时_如果没有上传头像_应该给出提示)
 {
     auto request = buildValidRegisterUserRequest();
-    request.avatar.clear();
+    request.avatarFileInfo = QFileInfo(); // 设置为无效的 QFileInfo，模拟未上传头像
 
     EXPECT_CALL(authClient, validateAndHashPassword(testing::_)).Times(0);
     EXPECT_CALL(fileClient, uploadAvatar(testing::_)).Times(0);

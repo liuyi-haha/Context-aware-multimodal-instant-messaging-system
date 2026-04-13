@@ -39,6 +39,35 @@ namespace ui::main_widgets
         layout->addStretch();
     }
 
+    QString statusToText(common::ConnectionStatus status)
+    {
+        if (status == common::ConnectionStatus::Connected)
+        {
+            return "已连接";
+        }
+        if (status == common::ConnectionStatus::Disconnected)
+        {
+            return "已断开";
+        }
+        if (status == common::ConnectionStatus::Connecting)
+        {
+            return "连接中";
+        }
+        return "未知状态";
+    }
+
+    void NavBar::setupConnections()
+    {
+        // 订阅连接状态改变信号
+        connect(common::UIEventBus::instance(), &common::UIEventBus::connectionStatusChanged, this,
+                [this](ui::common::ConnectionStatus status)
+                {
+                    // todo @liuyi 待完善
+                    qDebug() << "NavBar say: " << "I received connection status changed signal, new status: " <<
+                        statusToText(status);
+                });
+    }
+
     NavBar::NavBar(QWidget* parent)
         : QWidget(parent),
           m_btnRobot(nullptr),
@@ -51,6 +80,7 @@ namespace ui::main_widgets
         createSubWidgets();
         initLayout();
         setActiveButton(m_btnMessage);
+        setupConnections();
     }
 
     QPushButton* NavBar::createNavButton(const QString& iconPath, const QString& tooltip, int index)

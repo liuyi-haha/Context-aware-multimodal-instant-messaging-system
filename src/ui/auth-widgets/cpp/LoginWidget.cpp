@@ -17,6 +17,7 @@
 #include "contract/system-provider/auth-context-provider/Login.h"
 #include "sys/auth-context/application/service/include/AuthApplicationService.h"
 #include "sys/notification-context/application/service/include/NotificationApplicationService.h"
+#include "ui/common-widgets/ToastWidget.h"
 #include "ui/user-widgets/include/RegisterWidget.h"
 #include "ui/common/UIEVentBus.h"
 
@@ -32,9 +33,7 @@ namespace ui::auth_widgets
           m_passwordEdit(nullptr),
           m_loginButton(nullptr),
           m_goToRegisterLink(nullptr),
-          m_loginLoadingTimer(new QTimer(this)),
           m_isSubmitting(false),
-          m_loadingFrameIndex(0),
           m_authApplicationService(authApplicationService),
           m_notificationApplicationService(notificationApplicationService)
     {
@@ -124,15 +123,6 @@ namespace ui::auth_widgets
     {
         connect(m_loginButton, &QPushButton::clicked, this, &LoginWidget::submitLogin);
         connect(m_goToRegisterLink, &QPushButton::clicked, this, &LoginWidget::goToRegister);
-        connect(m_loginLoadingTimer, &QTimer::timeout, this, &LoginWidget::tickLoginLoading);
-
-        connect(ui::common::UIEventBus::instance(), &ui::common::UIEventBus::goToRegisterRequested, this, [this]
-        {
-            auto* registerWidget = new ui::user_widgets::RegisterWidget(nullptr);
-            registerWidget->setAttribute(Qt::WA_DeleteOnClose, true);
-            registerWidget->show();
-            close();
-        });
     }
 
     void LoginWidget::setSubmitting(bool submitting)
@@ -145,25 +135,14 @@ namespace ui::auth_widgets
 
         if (submitting)
         {
-            m_loadingFrameIndex = 0;
-            m_loginLoadingTimer->start(120);
-            tickLoginLoading();
+            m_loginButton->setEnabled(false);
+            m_loginButton->setText(QStringLiteral("登录中"));
         }
         else
         {
-            m_loginLoadingTimer->stop();
             m_loginButton->setText(QStringLiteral("登录"));
             m_loginButton->setEnabled(true);
         }
-    }
-
-    void LoginWidget::tickLoginLoading()
-    {
-        static const char* frames[] = {"|", "/", "-", "\\"};
-        const QString frame = QString::fromLatin1(frames[m_loadingFrameIndex % 4]);
-        ++m_loadingFrameIndex;
-        m_loginButton->setText(QStringLiteral("登录中 ") + frame);
-        m_loginButton->setEnabled(false);
     }
 
     void LoginWidget::submitLogin()
@@ -203,21 +182,18 @@ namespace ui::auth_widgets
         QtConcurrent::run([appService, notificationApplicationService = m_notificationApplicationService, request]()
         {
             const auto response = appService->login(request);
-            if (response.success && notificationApplicationService != nullptr)
-            {
-                notificationApplicationService->tryToConnect();
-            }
             return response;
         }).then(this, [this](const contract::auth::LoginResponse& response)
         {
             setSubmitting(false);
             if (!response.success)
             {
-                QMessageBox::warning(this, QStringLiteral("登录失败"), response.errMsg.value_or(QStringLiteral("未知错误")));
+                common_widgets::ToastWidget::showToast(this, "登录失败" + response.errMsg.value_or(""), 3000);
                 return;
             }
-
-            QMessageBox::information(this, QStringLiteral("登录成功"), QStringLiteral("登录成功，用户ID：") + response.userId);
+            common_widgets::ToastWidget::showToast(this, "登录成功, 欢迎回来: " + response.userId, 3000);
+            common::UIEventBus::instance()->emit loginSuccess();
+            this->deleteLater();
         });
     }
 
@@ -228,6 +204,7 @@ namespace ui::auth_widgets
             return;
         }
 
+        this->deleteLater();
         emit ui::common::UIEventBus::instance()->goToRegisterRequested();
     }
 } // auth_widgets

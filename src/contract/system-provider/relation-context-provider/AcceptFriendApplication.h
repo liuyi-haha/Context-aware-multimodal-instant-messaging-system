@@ -16,5 +16,8 @@ namespace contract::relation
 
     struct AcceptFriendApplicationResponse : public BaseResponse
     {
+        // todo @liuyi 添加单聊会话信息
+        bool isNewFriendShip; // 如果为false，则下面的字段无效
+        QString privateChatSessionId;
     };
 }

@@ -10,6 +10,10 @@
 #include <QIcon>
 #include <QScrollBar>
 #include "ui/auth-widgets/include/LoginWidget.h"
+#include "sys/message-context/application/include/MessageApplicationService.h"
+#include "ui/common-widgets/ToastWidget.h"
+#include "ui/common/UIEVentBus.h"
+#include <QtConcurrent/QtConcurrent>
 
 namespace ui::message_widgets
 {
@@ -18,12 +22,83 @@ namespace ui::message_widgets
         Q_OBJECT
 
     public:
-        explicit MessageInputWidget(QWidget* parent = nullptr)
-            : QWidget(parent)
+        explicit MessageInputWidget(const QString& chatSessionId, QWidget* parent = nullptr)
+            : currentChatSessionId(chatSessionId),
+              QWidget(parent)
+        {
+            setupMainLayout();
+            setupToolButtons();
+            setupTextEdit();
+            setupSendButton();
+            setupConnections();
+        }
+
+    signals:
+        // 发送消息信号
+        void sendMessage(const QString& message);
+
+    private slots:
+        void onTextChanged()
+        {
+            // 检查输入框是否有实际内容（不只是空格）
+            QString text = m_textEdit->toPlainText();
+            bool hasContent = !text.trimmed().isEmpty();
+            m_sendBtn->setEnabled(hasContent);
+        }
+
+        void onSendClicked()
+        {
+            QString text = m_textEdit->toPlainText().trimmed();
+            if (text.isEmpty())
+            {
+                common_widgets::ToastWidget::showToast(this, "消息不能为空");
+                return;
+            }
+
+            m_sendBtn->setEnabled(false); // 发送后禁用按钮，防止重复点击
+            m_sendBtn->setText("发送中...");
+            QtConcurrent::run([this, text]()-> contract::message::SendTextMessageResponse
+            {
+                if (messageApplicationService == nullptr)
+                {
+                    qDebug() << "MessageInputWidget::onSendClicked: messageApplicationService is null";
+                    return {};
+                }
+                qDebug() << "MessageInputWidget::onSendClicked: 开始发送消息，chatSessionId=" << currentChatSessionId
+                    << ", text=" << text;
+                return messageApplicationService->sendTextMessage(currentChatSessionId, text);
+            }).then(this, [this](const contract::message::SendTextMessageResponse& resp)
+            {
+                m_sendBtn->setEnabled(true); // 发送失败，重新启用按钮
+                m_sendBtn->setText("发送");
+                if (!resp.success || !resp.messageView.has_value())
+                {
+                    common_widgets::ToastWidget::showToast(this, "消息发送失败: " + resp.errMsg.value_or("未知错误"));
+                    return;
+                }
+                // 发送成功，清空输入框
+                m_textEdit->clear();
+                common_widgets::ToastWidget::showToast(this, "发送成功");
+                qDebug() << "MessageInput Say: 发送消息成功，并发送messageReceived信号"; // 发送信号，通知UI更新消息列表
+                emit common::UIEventBus::instance()->messageSent(resp.messageView.value(), currentChatSessionId);
+                qDebug() << "MessageInput Say: 发送消息成功，并发送chatSessionUpdated信号"; // 发送信号，通知UI更新消息列表
+                emit common::UIEventBus::instance()->chatSessionUpdated(currentChatSessionId);
+                // 发送信号，通知ChatSessionList更新会话列表
+            });
+        }
+
+    private:
+        void setupMainLayout()
         {
             QVBoxLayout* mainLayout = new QVBoxLayout(this);
             mainLayout->setContentsMargins(0, 0, 0, 0);
             mainLayout->setSpacing(0); // 移除行间距，消除分界线
+        }
+
+        void setupToolButtons()
+        {
+            // 获取主布局
+            QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>(layout());
 
             // 工具栏 - 按钮融入背景，减小高度
             QHBoxLayout* toolLayout = new QHBoxLayout();
@@ -44,15 +119,17 @@ namespace ui::message_widgets
                 "   background-color: rgba(0, 0, 0, 0.12);"
                 "}";
 
+            // 创建语音按钮
             m_voiceBtn = new QPushButton(this);
             m_voiceBtn->setToolTip("发送语音");
-            m_voiceBtn->setFixedSize(28, 28); // 减小按钮尺寸
+            m_voiceBtn->setFixedSize(28, 28);
             m_voiceBtn->setIcon(QIcon(":/icons/message/voice.png"));
             m_voiceBtn->setIconSize(QSize(20, 20));
             m_voiceBtn->setStyleSheet(flatButtonStyle);
             m_voiceBtn->setCursor(Qt::PointingHandCursor);
             m_voiceBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+            // 创建图片按钮
             m_imageBtn = new QPushButton(this);
             m_imageBtn->setToolTip("发送图片");
             m_imageBtn->setFixedSize(28, 28);
@@ -62,6 +139,7 @@ namespace ui::message_widgets
             m_imageBtn->setCursor(Qt::PointingHandCursor);
             m_imageBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+            // 创建文件按钮
             m_fileBtn = new QPushButton(this);
             m_fileBtn->setToolTip("发送文件");
             m_fileBtn->setFixedSize(28, 28);
@@ -71,6 +149,7 @@ namespace ui::message_widgets
             m_fileBtn->setCursor(Qt::PointingHandCursor);
             m_fileBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+            // 创建智能回复按钮
             m_smartReplyBtn = new QPushButton(this);
             m_smartReplyBtn->setToolTip("智能回复");
             m_smartReplyBtn->setFixedSize(28, 28);
@@ -80,11 +159,21 @@ namespace ui::message_widgets
             m_smartReplyBtn->setCursor(Qt::PointingHandCursor);
             m_smartReplyBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+            // 添加按钮到工具栏
             toolLayout->addWidget(m_voiceBtn);
             toolLayout->addWidget(m_imageBtn);
             toolLayout->addWidget(m_fileBtn);
             toolLayout->addWidget(m_smartReplyBtn);
             toolLayout->addStretch();
+
+            // 将工具栏添加到主布局
+            mainLayout->addLayout(toolLayout);
+        }
+
+        void setupTextEdit()
+        {
+            // 获取主布局
+            QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>(layout());
 
             // 文本输入框 - 防止横向滚动条
             m_textEdit = new QTextEdit(this);
@@ -98,9 +187,14 @@ namespace ui::message_widgets
             m_textEdit->setLineWrapMode(QTextEdit::WidgetWidth); // 根据控件宽度自动换行
             m_textEdit->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere); // 单词边界换行
 
-            // 监听文本变化
-            connect(m_textEdit, &QTextEdit::textChanged, this, &MessageInputWidget::onTextChanged);
+            // 将文本编辑框添加到主布局
+            mainLayout->addWidget(m_textEdit);
+        }
 
+        void setupSendButton()
+        {
+            // 获取主布局
+            QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>(layout());
             // 发送按钮放在下方，减小高度
             QHBoxLayout* sendLayout = new QHBoxLayout();
             sendLayout->setContentsMargins(0, 2, 8, 4); // 减小上下边距
@@ -131,41 +225,21 @@ namespace ui::message_widgets
                 "   color: #8E8E93;"
                 "}"
             );
+
             sendLayout->addWidget(m_sendBtn);
-
-            // 连接发送按钮的点击信号
-            connect(m_sendBtn, &QPushButton::clicked, this, &MessageInputWidget::onSendClicked);
-
-            mainLayout->addLayout(toolLayout);
-            mainLayout->addWidget(m_textEdit);
             mainLayout->addLayout(sendLayout);
 
             // 确保整个控件不会产生横向滚动条
             setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         }
 
-    signals:
-        // 发送消息信号
-        void sendMessage(const QString& message);
-
-    private slots:
-        void onTextChanged()
+        void setupConnections()
         {
-            // 检查输入框是否有实际内容（不只是空格）
-            QString text = m_textEdit->toPlainText();
-            bool hasContent = !text.trimmed().isEmpty();
-            m_sendBtn->setEnabled(hasContent);
-        }
+            // 监听文本变化
+            connect(m_textEdit, &QTextEdit::textChanged, this, &MessageInputWidget::onTextChanged);
 
-        void onSendClicked()
-        {
-            QString message = m_textEdit->toPlainText().trimmed();
-            if (!message.isEmpty())
-            {
-                emit sendMessage(message);
-                m_textEdit->clear();
-                m_sendBtn->setEnabled(false);
-            }
+            // 连接发送按钮的点击信号
+            connect(m_sendBtn, &QPushButton::clicked, this, &MessageInputWidget::onSendClicked);
         }
 
     private:
@@ -175,5 +249,7 @@ namespace ui::message_widgets
         QPushButton* m_smartReplyBtn;
         QPushButton* m_sendBtn;
         QTextEdit* m_textEdit;
+        QString currentChatSessionId; // 当前聊天会话ID，发送消息时需要用到
+        sys::message::application::MessageApplicationService* messageApplicationService = QInjection::Inject;
     };
 }

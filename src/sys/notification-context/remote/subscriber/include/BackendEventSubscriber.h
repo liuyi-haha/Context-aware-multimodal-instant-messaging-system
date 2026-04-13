@@ -17,6 +17,8 @@ namespace sys::notification::remote
 
     public slots:
         void subscribeConnectedEvent();
+        void subscribeDisConnectedEvent();
+        void subscribeConnectErrorEvent(const QString& error);
 
     private:
         application::BackendEventHandler* backendEventHandler = nullptr;

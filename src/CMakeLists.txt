@@ -1,21 +1,23 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.20)
 project(instant_messaging_system)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
 
-set(CMAKE_PREFIX_PATH "F:/software/Qt/6.5.3/mingw_64")
+# 为 Debug 模式强制生成完整的调试信息 (/Zi)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
+# 告诉链接器生成 .pdb 文件并包含调试信息 (/DEBUG)
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DEBUG")
+# 设置 Qt 路径
+set(CMAKE_PREFIX_PATH "F:/software/Qt/6.5.3/msvc2019_64")
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../OpenAPI/user-service/client
-        ${CMAKE_CURRENT_BINARY_DIR}/user-service-client-build)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../OpenAPI/auth-service/client
-        ${CMAKE_CURRENT_BINARY_DIR}/auth-service-client-build)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../OpenAPI/chat-service/client
-        ${CMAKE_CURRENT_BINARY_DIR}/chat-service-client-build)
+# 设置 protobuf 查找路径
+set(protobuf_DIR "F:/GraduationProject/component/vcpkg/installed/x64-windows/share/protobuf")
 
-
+# 查找 Qt6
 find_package(Qt6 COMPONENTS
         Core
         Widgets
@@ -23,8 +25,52 @@ find_package(Qt6 COMPONENTS
         Test
         Websockets
         Sql
+        Multimedia
         REQUIRED)
 
+# 查找 Protobuf
+find_package(protobuf CONFIG REQUIRED)
+
+# 加载 protobuf_generate 函数
+include(${protobuf_DIR}/protobuf-generate.cmake)
+
+message(STATUS "Protobuf found: ${protobuf_VERSION}")
+
+# 添加 OpenAPI 子目录
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../OpenAPI/user-service/client
+        ${CMAKE_CURRENT_BINARY_DIR}/user-service-client-build)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../OpenAPI/auth-service/client
+        ${CMAKE_CURRENT_BINARY_DIR}/auth-service-client-build)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../OpenAPI/chat-service/client
+        ${CMAKE_CURRENT_BINARY_DIR}/chat-service-client-build)
+
+# ==================== Protobuf 代码生成 ====================
+file(GLOB_RECURSE PROTO_FILES "../proto/*.proto")
+
+# 创建 proto_obj 库
+add_library(proto_obj OBJECT ${PROTO_FILES})
+
+# 链接 Protobuf 运行时库
+target_link_libraries(proto_obj PUBLIC protobuf::libprotobuf)
+
+# 设置生成文件存放目录
+set(PROTO_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+# 添加生成目录到包含路径
+target_include_directories(proto_obj PUBLIC
+        "$<BUILD_INTERFACE:${PROTO_BINARY_DIR}>"
+)
+
+# 调用生成函数，自动生成 .pb.cc 和 .pb.h
+protobuf_generate(
+        TARGET proto_obj
+        LANGUAGE cpp
+        OUT_VAR proto_outputs
+        IMPORT_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/../proto"
+        PROTOC_OUT_DIR "${PROTO_BINARY_DIR}"
+)
+
+# ==================== 源代码列表 ====================
 set(IMS_SHARED_EXECUTABLE_SOURCES
         sys/auth-context/adapter/client/cpp/BackendClientAdapter.cpp
         sys/auth-context/adapter/client/include/BackendClientAdapter.h
@@ -211,18 +257,28 @@ set(IMS_SHARED_EXECUTABLE_SOURCES
         sys/message-context/application/cpp/MessageViewAssembler.cpp
         sys/message-context/application/include/MessageViewAssembler.h
 
+        ui/common/UIEVentBus.cpp
+        ui/common/UIEVentBus.h
 )
 
 set(IMS_SHARED_LINK_LIBS
-        Qt::Core
-        Qt::Widgets
-        Qt::Concurrent
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::Concurrent
         Qt6::WebSockets
         Qt6::Sql
+        Qt6::Multimedia
         QtOpenAPIUserService
         QtOpenAPIAuthService
         QtOpenAPIChatService
 )
+
+set(IMS_SHARED_INCLUDE_DIRS
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/../third-lib/QInjection/src
+)
+
+# ==================== 主可执行文件 ====================
 add_executable(instant_messaging_system
         Main.cpp
 
@@ -242,8 +298,7 @@ add_executable(instant_messaging_system
 
         ui/auth-widgets/cpp/LoginWidget.cpp
         ui/auth-widgets/include/LoginWidget.h
-        ui/common/UIEVentBus.cpp
-        ui/common/UIEVentBus.h
+
         ui/main-widgets/cpp/MainWindow.cpp
         ui/main-widgets/cpp/MiddleStack.cpp
         ui/main-widgets/cpp/NavBar.cpp
@@ -262,7 +317,7 @@ add_executable(instant_messaging_system
         ui/user-widgets/cpp/UserIdDisplayWidget.cpp
         ui/user-widgets/include/RegisterWidget.h
         ui/user-widgets/include/UserIdDisplayWidget.h
-
+        ui/relation-widgets/include/FriendAddingWidget.h
 
         ${IMS_SHARED_EXECUTABLE_SOURCES}
         ui/message-widgets/include/MessageListModel.h
@@ -270,36 +325,32 @@ add_executable(instant_messaging_system
         ui/user-widgets/include/SearchWindow.h
         ui/main-widgets/include/MiddlePanel.h
         sys/message-context/starter/Starter.h
-
-)
-
-set(IMS_SHARED_INCLUDE_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../third-lib/QInjection/src
+        ui/common-widgets/ToastWidget.h
+        ui/relation-widgets/include/AddFriendRequestWidget.h
+        ui/relation-widgets/cpp/AddFriendRequestWidget.cpp
+        Controller.h
+        ui/common-widgets/SoundPlayer.h
 )
 
 target_include_directories(instant_messaging_system PRIVATE
         ${IMS_SHARED_INCLUDE_DIRS}
 )
 
-
 target_link_libraries(instant_messaging_system
+        PRIVATE
+        proto_obj
         ${IMS_SHARED_LINK_LIBS}
 )
 
-# for test
-
-
+# ==================== 测试配置 ====================
 include(FetchContent)
 enable_testing()
 
-# 声明需要获取 googletest
 FetchContent_Declare(
         googletest
         SOURCE_DIR ${CMAKE_SOURCE_DIR}/../third-lib/googletest
 )
 
-# 使 CMake 可用 googletest
 FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
 
@@ -309,9 +360,9 @@ set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES
         AUTORCC OFF
 )
 
-
-# 收集 .cpp 文件
+# 收集测试文件
 file(GLOB_RECURSE TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../tests/*.cpp)
+
 add_executable(run_tests
         ${TEST_SOURCES}
         ${IMS_SHARED_EXECUTABLE_SOURCES}
@@ -341,10 +392,8 @@ add_executable(run_tests
         ../tests/message-context/application/GetMessagesBeforeTest.cpp
         ../tests/message-context/application/GetChatSessionLastMessageInfosTest.cpp
         ../tests/relation-context/application/service/CheckSenderHasPermissionToSendMessageTest.cpp
+        ../tests/relation-context/application/service/HandleFriendApplicationHandledNotificationTest.cpp
 )
-
-enable_testing()
-add_test(NAME RunAllTests COMMAND run_tests)
 
 set_target_properties(run_tests PROPERTIES
         AUTOMOC ON
@@ -354,9 +403,11 @@ set_target_properties(run_tests PROPERTIES
 
 target_link_libraries(run_tests PRIVATE
         ${IMS_SHARED_LINK_LIBS}
+        proto_obj
         gtest_main
         gmock
 )
+
 target_include_directories(run_tests PRIVATE
         ${IMS_SHARED_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}/../tests

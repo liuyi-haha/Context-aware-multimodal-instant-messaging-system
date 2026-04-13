@@ -23,7 +23,7 @@ namespace ui::message_widgets
               QWidget(parent)
         {
             m_titleBar = new ChatSessionTitleWidget(chatSessionName, this);
-            m_inputWidget = new MessageInputWidget(this);
+            m_inputWidget = new MessageInputWidget(m_chatSessionId, this);
             m_messageList = new MessageListWidget(m_chatSessionId, this);
             initLayout();
             initStyle();

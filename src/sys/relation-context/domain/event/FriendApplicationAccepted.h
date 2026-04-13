@@ -30,7 +30,7 @@ namespace sys::relation::domain
         const QString applicantUserId;
         const QString targetUserId;
         const QString friendShipId;
-        const QString remark; // 同意申请时给对方设置的好友备注
+        const QString remark; // 请记住，这是我给对方的备注，对方可能是申请人，也是申请目标
         const QString privateChatSessionId;
         const QString applicantParticipantId;
         const QString targetUserParticipantId;

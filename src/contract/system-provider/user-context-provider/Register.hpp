@@ -2,6 +2,7 @@
 // Created by 86150 on 2026/3/23.
 //
 #pragma once
+#include <QFileInfo>
 #include <QString>
 
 #include "contract/BaseResponse.hpp"
@@ -13,7 +14,7 @@ namespace contract::user
         QString nickname;
         QString phone;
         QString password;
-        QByteArray avatar;
+        QFileInfo avatarFileInfo;
     };
 
     struct RegisterResponse : public BaseResponse

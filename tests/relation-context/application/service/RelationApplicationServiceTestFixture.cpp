@@ -107,8 +107,8 @@ void RelationApplicationServiceTestFixture::seedPendingApplication(const QString
     seedApplication(friendApplicationId,
                     applicantUserId,
                     targetUserId,
-                    "msg_a",
-                    "remark_a",
+                    verificationMessage,
+                    recipientRemark,
                     QDateTime::currentDateTime(),
                     sys::relation::domain::ApplicationStatus::Pending);
 }

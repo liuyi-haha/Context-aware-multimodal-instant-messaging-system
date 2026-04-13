@@ -28,7 +28,7 @@ namespace sys::auth::application
 
     QString AuthApplicationService::getHashedPassword(const QString& password)
     {
-        return password; // Placeholder: hashing algorithm will be implemented later.
+        return domain::Password::of(password).hashedValue();
     }
 
     contract::auth::LoginResponse AuthApplicationService::login(const contract::auth::LoginRequest& request)

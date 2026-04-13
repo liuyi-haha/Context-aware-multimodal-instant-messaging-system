@@ -25,8 +25,9 @@ namespace sys
                 port::BackendClient* backendClient = QInjection::Inject,
                 port::FileClient* fileClient = QInjection::Inject,
                 port::UserRepository* userRepository = QInjection::Inject);
-            QString registerUser(const QString& nickname, const QString& phone, const QString& password,
-                                 const QByteArray& avatar);
+            QString registerUser(const QString& nickname, const QString& phone,
+                                 const QString& password,
+                                 const QFileInfo& avatarFileInfo);
             QSharedPointer<domain::User> searchUser(const QString& account);
             QSharedPointer<domain::User> getUser(const QString& userId);
             QList<QSharedPointer<domain::User>> getUsers(const QSet<QString>& userIds);

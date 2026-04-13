@@ -16,6 +16,8 @@
         <file>icons/message/smart_reply.png</file>
         <file>icons/user/search.png</file>
         <file>icons/relation/create_group.png</file>
+        <file>sound/notification.wav</file>
+
 
     </qresource>
 </RCC>

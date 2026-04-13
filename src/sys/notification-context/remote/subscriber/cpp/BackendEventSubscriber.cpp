@@ -13,10 +13,25 @@ namespace sys::notification::remote
           QObject(parent)
     {
         connect(&Websocket::instance(), &Websocket::connected, this, &BackendEventSubscriber::subscribeConnectedEvent);
+        connect(&Websocket::instance(), &Websocket::disconnected, this,
+                &BackendEventSubscriber::subscribeDisConnectedEvent);
+        connect(&Websocket::instance(), &Websocket::connectFailed, this,
+                &BackendEventSubscriber::subscribeConnectErrorEvent);
     }
 
     void BackendEventSubscriber::subscribeConnectedEvent()
     {
         backendEventHandler->handleConnectedEvent();
+    }
+
+    void BackendEventSubscriber::subscribeDisConnectedEvent()
+    {
+        backendEventHandler->handleDisconnectedEvent();
+    }
+
+    void BackendEventSubscriber::subscribeConnectErrorEvent(const QString& error)
+    {
+        qDebug() << "BackendEventSubscriber say: Websocket connection error: " << error;
+        backendEventHandler->handleConnectFailedEvent();
     }
 }

@@ -3,7 +3,7 @@
 #include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QTimer>
-
+#include <QTemporaryFile>
 #include "OAIUserDefaultApi.h"
 #include "OAIUserHttpRequest.h"
 #include "sys/common/component/UserCredentialManager.h"
@@ -58,6 +58,7 @@ namespace sys::user::adapter
                          });
 
         api.registerUser(nickname, avatar, phone, password);
+
         loop.exec();
 
         if (!response.is_data_Set())
@@ -73,6 +74,7 @@ namespace sys::user::adapter
         OpenAPIUser::OAIUserSearchUser_200_response response;
 
         OpenAPIUser::OAIUserDefaultApi api;
+        api.setBearerToken(sys::common::component::UserCredentialManager::instance().getCurrentToken());
         QNetworkAccessManager manager;
         api.setNetworkAccessManager(&manager);
         api.setTimeOut(8000);
@@ -173,16 +175,19 @@ namespace sys::user::adapter
     }
 
     port::BackendClient::RegisterUserResult BackendClientAdapter::registerUser(
-        const QString& hashedPassword, const QString& nickname, const QString& phone, const QByteArray& avatar)
+        const QString& hashedPassword, const QString& nickname, const QString& phone, const QFileInfo& avatarFileInfo)
     {
         if (apiGateway == nullptr)
         {
             throw core::InfraException("UserServiceApiGateway 未配置");
         }
 
-
         auto fileElement = OpenAPIUser::OAIUserHttpFileElement();
-        fileElement.fromByteArray(avatar);
+
+        fileElement.setVariableName("avatar");
+        fileElement.setFileName(avatarFileInfo.absoluteFilePath()); //很关键
+        fileElement.setMimeType("image/png");
+        fileElement.setRequestFileName(avatarFileInfo.fileName());
         const auto response = apiGateway->registerUser(nickname, phone, fileElement, hashedPassword);
         if (!response.isSuccess())
         {
@@ -202,7 +207,7 @@ namespace sys::user::adapter
         }
 
         const auto data = response.getData();
-        return {QString::number(data.getUserId()), ""};
+        return {data.getUserId(), data.getAvatarFileId()};
     }
 
     QSharedPointer<domain::User> BackendClientAdapter::searchUser(const QString& account)

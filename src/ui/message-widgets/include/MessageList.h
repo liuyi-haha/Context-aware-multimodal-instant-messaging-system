@@ -9,6 +9,7 @@
 #include <QListView>
 #include <QAbstractItemView>
 #include <QGraphicsView>
+#include <QtConcurrent>
 #include "MessageListModel.h"
 #include "MessageDelegate.h"
 #include "sys/message-context/application/include/MessageApplicationService.h"
@@ -24,60 +25,18 @@ namespace ui::message_widgets
             : m_chatSessionId(chatSessionId),
               QWidget(parent)
         {
-            // 创建布局
-            QVBoxLayout* layout = new QVBoxLayout(this);
-            layout->setContentsMargins(0, 0, 0, 0);
-
-            // 创建列表视图
-            // listView->setSelectionMode(QAbstractItemView::SingleSelection);
-            // listView->setMouseTracking(true);
-            // listView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-            // listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-            // listView->setUniformItemSizes(true);
-
-
-            listView = new QListView(this);
-            listView->setSelectionMode(QAbstractItemView::NoSelection);
-            listView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-            listView->setSelectionBehavior(QAbstractItemView::SelectRows);
-            listView->setMouseTracking(false);
-            listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-            listView->setStyleSheet(R"(
-            QListView {
-                border: none;
-                outline: none;
-            }
-            QListView::item {
-                padding: 0px;
-            }
-        )");
-
-            // 创建模型和委托
-            m_model = new MessageListModel(this);
-            m_delegate = new MessageDelegate(this);
-
-            listView->setModel(m_model);
-            listView->setItemDelegate(m_delegate);
-
-            layout->addWidget(listView);
-
-            // 连接点击信号
-            connect(listView, &QListView::clicked, this, &MessageListWidget::onItemClicked);
-
-            // 异步加载消息
-            QtConcurrent::run([this]()-> QList<contract::message::MessageView>
-            {
-                return messageApplicationService->getRecentMessages(m_chatSessionId, 20);
-            }).then(this, [this](const QList<contract::message::MessageView>& views)
-            {
-                m_model->setViews(views);
-            });
+            setupLayout();
+            setupListView();
+            setupModelAndDelegate();
+            setupConnections();
+            loadRecentMessages();
         }
 
         // 添加消息
         void addMessages(const QList<contract::message::MessageView>& msgs)
         {
             m_model->addMessages(msgs);
+            scrollToBottom();
         }
 
         // 获取模型指针（用于异步加载）
@@ -149,6 +108,66 @@ namespace ui::message_widgets
             default:
                 break;
             }
+        }
+
+    private:
+        void setupLayout()
+        {
+            QVBoxLayout* layout = new QVBoxLayout(this);
+            layout->setContentsMargins(0, 0, 0, 0);
+        }
+
+        void setupListView()
+        {
+            // 获取主布局
+            QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(this->layout());
+
+            listView = new QListView(this);
+            listView->setAttribute(Qt::WA_Hover, false); // 禁用悬停事件
+            listView->setMouseTracking(false); // 禁用鼠标追踪
+            listView->setSelectionMode(QAbstractItemView::NoSelection);
+            listView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+            listView->setSelectionBehavior(QAbstractItemView::SelectRows);
+            listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            listView->setStyleSheet(R"(
+            QListView {
+                border: none;
+                outline: none;
+            }
+            QListView::item {
+                padding: 0px;
+            }
+        )");
+
+            layout->addWidget(listView);
+        }
+
+        void setupModelAndDelegate()
+        {
+            // 创建模型和委托
+            m_model = new MessageListModel(this);
+            m_delegate = new MessageDelegate(this);
+
+            listView->setModel(m_model);
+            listView->setItemDelegate(m_delegate);
+        }
+
+        void setupConnections()
+        {
+            // 连接点击信号
+            connect(listView, &QListView::clicked, this, &MessageListWidget::onItemClicked);
+        }
+
+        void loadRecentMessages()
+        {
+            // 异步加载消息
+            QtConcurrent::run([this]() -> QList<contract::message::MessageView>
+            {
+                return messageApplicationService->getRecentMessages(m_chatSessionId, 20);
+            }).then(this, [this](const QList<contract::message::MessageView>& views)
+            {
+                m_model->setViews(views);
+            });
         }
 
     private:

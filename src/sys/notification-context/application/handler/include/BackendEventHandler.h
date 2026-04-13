@@ -21,6 +21,8 @@ namespace sys::notification::application
             QObject* parent = nullptr);
 
         void handleConnectedEvent();
+        void handleDisconnectedEvent();
+        void handleConnectFailedEvent();
 
     private:
         port::ConnectionManager* connectionManager = nullptr;

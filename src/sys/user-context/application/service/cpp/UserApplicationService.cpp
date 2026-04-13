@@ -78,9 +78,10 @@ namespace sys::user::application
 
         try
         {
-            response.userId = userService->registerUser(request.nickname, request.phone, request.password,
-                                                        request.avatar);
+            QString userId = userService->registerUser(request.nickname, request.phone, request.password,
+                                                       request.avatarFileInfo);
             response.success = true;
+            response.userId = userId;
         }
         catch (const std::exception& ex)
         {

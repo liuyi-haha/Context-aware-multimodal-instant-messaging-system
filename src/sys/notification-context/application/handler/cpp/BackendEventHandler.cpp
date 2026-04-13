@@ -33,4 +33,28 @@ namespace sys::notification::application
             connectionStatusChangedEventPublisher->publish(ConnectionStatusChanged{port::ConnectionStatus::Connected});
         }
     }
+
+    void BackendEventHandler::handleDisconnectedEvent()
+    {
+        const auto previousStatus = connectionManager->getConnectStatus();
+        connectionManager->setConnectionStatus(port::ConnectionStatus::Disconnected);
+
+        if (previousStatus != connectionManager->getConnectStatus())
+        {
+            connectionStatusChangedEventPublisher->publish(
+                ConnectionStatusChanged{port::ConnectionStatus::Disconnected});
+        }
+    }
+
+    void BackendEventHandler::handleConnectFailedEvent()
+    {
+        const auto previousStatus = connectionManager->getConnectStatus();
+        connectionManager->setConnectionStatus(port::ConnectionStatus::Disconnected);
+
+        if (previousStatus != connectionManager->getConnectStatus())
+        {
+            connectionStatusChangedEventPublisher->publish(
+                ConnectionStatusChanged{port::ConnectionStatus::Disconnected});
+        }
+    }
 }

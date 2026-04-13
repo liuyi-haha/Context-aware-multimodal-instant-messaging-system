@@ -10,6 +10,7 @@
 #include "sys/relation-context/domain/service/include/FriendShipService.h"
 #include "sys/relation-context/domain/service/include/ParticipantService.h"
 #include "sys/relation-context/domain/service/include/PrivateChatSessionService.h"
+#include "ui/common/UIEVentBus.h"
 
 namespace sys::relation::domain
 {
@@ -18,12 +19,14 @@ namespace sys::relation::domain
         FriendApplicationValidator* friendApplicationValidator,
         port::FriendApplicationRepository* friendApplicationRepository,
         port::FriendShipRepository* friendShipRepository,
+        port::PrivateChatSessionRepository* privateChatSessionRepository,
         QObject* parent)
         : QObject(parent),
           backendClient(backendClient),
           friendApplicationValidator(friendApplicationValidator),
           friendApplicationRepository(friendApplicationRepository),
-          friendShipRepository(friendShipRepository)
+          friendShipRepository(friendShipRepository),
+          privateChatSessionRepository(privateChatSessionRepository)
     {
     }
 
@@ -50,7 +53,6 @@ namespace sys::relation::domain
         friendApplicationValidator->validateSendFriendApplicationInputs(verificationMessage, recipientRemark,
                                                                         targetUserId);
 
-
         const auto backendResult = backendClient->sendFriendApplication(
             targetUserId,
             verificationMessage,
@@ -68,7 +70,8 @@ namespace sys::relation::domain
         return backendResult.friendApplicationId;
     }
 
-    void FriendApplicationService::acceptFriendApplication(const QString& friendApplicationId, const QString& remark)
+    ::std::pair<bool, QString> FriendApplicationService::acceptFriendApplication(
+        const QString& friendApplicationId, const QString& remark)
     {
         checkConfig();
 
@@ -84,7 +87,7 @@ namespace sys::relation::domain
 
         if (!backendResult.isFriendShipCreated || !backendResult.newFriendShipInfo.has_value())
         {
-            return;
+            return {false, ""};
         }
 
         const auto& info = backendResult.newFriendShipInfo.value();
@@ -98,6 +101,59 @@ namespace sys::relation::domain
             info.applicantParticipantId,
             info.targetUserParticipantId);
         publish(event);
+        return {true, info.privateChatSessionId};
+    }
+
+    void FriendApplicationService::receiveFriendApplication(const QString& friendApplicationId,
+                                                            const QString& applicantUserId,
+                                                            const QString& verificationMessage,
+                                                            const QDateTime& applyTime)
+    {
+        // 创建并保存
+        QString currentUserId = sys::common::component::UserCredentialManager::instance().getCurrentUserId();
+        auto application = FriendApplication::of(applicantUserId, friendApplicationId, currentUserId,
+                                                 verificationMessage, "", applyTime); // recipientRemark客户端是不需要知道的
+        friendApplicationRepository->save(application);
+    }
+
+    void FriendApplicationService::rejectFriendApplicationByPeer(const QString& friendApplicationId)
+    {
+        auto application = friendApplicationRepository->of(friendApplicationId);
+        application->reject();
+        friendApplicationRepository->save(application);
+    }
+
+    void FriendApplicationService::acceptFriendApplicationByPeerWithNewFriendShip(
+        const QString& friendApplicationId, const QString& friendShipId, const QString& privateChatSessionId,
+        const QString& applicantParticipantId, const QString& targetUserParticipantId)
+    {
+        // 先把好友申请查出来
+        auto application = friendApplicationRepository->of(friendApplicationId);
+        // 把好友申请状态改成已接受
+        application->accept();
+        // 保存好友申请
+        friendApplicationRepository->save(application);
+
+        FriendApplicationAccepted event(
+            friendApplicationId,
+            application->applicantUserId(),
+            application->targetUserId(),
+            friendShipId,
+            application->recipientRemarkValue(),
+            privateChatSessionId,
+            applicantParticipantId,
+            targetUserParticipantId);
+        publish(event);
+    }
+
+    void FriendApplicationService::acceptFriendApplicationByPeerWithNoFriendShip(const QString& applicationId)
+    {
+        // 先把好友申请查出来
+        auto application = friendApplicationRepository->of(applicationId);
+        // 把好友申请状态改成已接受
+        application->accept();
+        // 保存好友申请
+        friendApplicationRepository->save(application);
     }
 
     void FriendApplicationService::rejectFriendApplication(const QString& friendApplicationId)
@@ -127,6 +183,17 @@ namespace sys::relation::domain
 
         return FriendApplication::composeAndSortByApplyTimeDesc(asApplicantFriendApplications,
                                                                 asTargetFriendApplications);
+    }
+
+    QSharedPointer<FriendApplication> FriendApplicationService::getFriendApplication(QString applicationId)
+    {
+        checkConfig();
+        auto application = friendApplicationRepository->of(applicationId);
+        if (application == nullptr)
+        {
+            throw core::DomainException("Friend application not found for id: " + applicationId);
+        }
+        return application;
     }
 
     void FriendApplicationService::publish(const FriendApplicationAccepted& friendApplicationAccepted)

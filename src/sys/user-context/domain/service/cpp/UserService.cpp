@@ -4,9 +4,11 @@
 
 #include "../include/UserService.h"
 
+#include <QFileInfo>
 #include <QSet>
 
 #include "sys/user-context/domain/exception/InvalidAccountException.h"
+#include "sys/user-context/domain/exception/InvalidAvatarException.h"
 #include "sys/user-context/domain/exception/InvalidUserIdException.h"
 #include "sys/user-context/domain/exception/UserNotFoundException.h"
 #include "sys/user-context/domain/exception/UserServiceDependencyException.h"
@@ -47,14 +49,25 @@ namespace sys::user::domain
         const QString& nickname,
         const QString& phone,
         const QString& password,
-        const QByteArray& avatar)
+        const QFileInfo& avatarFileInfo)
     {
         checkConfig(true, true);
+
+        // 把头像读取到本地缓存
+        QFile avatarFile(avatarFileInfo.absoluteFilePath());
+        if (!avatarFile.open(QIODevice::ReadOnly))
+        {
+            throw InvalidAvatarException();
+        }
+        auto avatar = avatarFile.readAll();
+        avatarFile.close();
 
         QString hashedPassword = userValidator->validate(nickname, phone, password, avatar);
 
         auto [userId, avatarFileId] = backendClient->registerUser(
-            hashedPassword, nickname, phone, avatar);
+            hashedPassword, nickname, phone, avatarFileInfo);
+
+
         auto user = User::of(userId, nickname, phone, avatar, avatarFileId);
 
         fileClient->uploadAvatar(user);

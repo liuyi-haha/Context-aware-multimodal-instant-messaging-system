@@ -27,6 +27,8 @@
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrentRun>
 
+#include "ui/common-widgets/ToastWidget.h"
+
 namespace ui::user_widgets
 {
     RegisterWidget::RegisterWidget(
@@ -42,9 +44,7 @@ namespace ui::user_widgets
           m_passwordHintLabel(nullptr),
           m_registerButton(nullptr),
           m_goToLoginLink(nullptr),
-          m_registerLoadingTimer(new QTimer(this)),
           m_isSubmitting(false),
-          m_loadingFrameIndex(0),
           m_userApplicationService(userApplicationService)
     {
         setAttribute(Qt::WA_DeleteOnClose, true);
@@ -250,15 +250,6 @@ namespace ui::user_widgets
         connect(m_passwordEdit, &QLineEdit::textChanged, this, &RegisterWidget::updateValidationState);
         connect(m_registerButton, &QPushButton::clicked, this, &RegisterWidget::submitRegister);
         connect(m_goToLoginLink, &QPushButton::clicked, this, &RegisterWidget::goToLogin);
-        connect(m_registerLoadingTimer, &QTimer::timeout, this, &RegisterWidget::tickRegisterLoading);
-
-        connect(ui::common::UIEventBus::instance(), &ui::common::UIEventBus::goToLoginRequested, this, [this]
-        {
-            auto* loginWidget = new ui::auth_widgets::LoginWidget(nullptr);
-            loginWidget->setAttribute(Qt::WA_DeleteOnClose, true);
-            loginWidget->show();
-            close();
-        });
     }
 
     bool RegisterWidget::isNicknameValid(const QString& nickname)
@@ -351,26 +342,16 @@ namespace ui::user_widgets
 
         if (submitting)
         {
-            m_loadingFrameIndex = 0;
-            m_registerLoadingTimer->start(120);
-            tickRegisterLoading();
+            m_registerButton->setEnabled(false);
+            m_registerButton->setText("注册中");
         }
         else
         {
-            m_registerLoadingTimer->stop();
             m_registerButton->setText(QStringLiteral("注册"));
             updateValidationState();
         }
     }
 
-    void RegisterWidget::tickRegisterLoading()
-    {
-        static const char* frames[] = {"|", "/", "-", "\\"};
-        const QString frame = QString::fromLatin1(frames[m_loadingFrameIndex % 4]);
-        ++m_loadingFrameIndex;
-        m_registerButton->setText(QStringLiteral("注册中 ") + frame);
-        m_registerButton->setEnabled(false);
-    }
 
     void RegisterWidget::chooseAvatar()
     {
@@ -415,19 +396,19 @@ namespace ui::user_widgets
 
         if (!isNicknameValid(nickname))
         {
-            QMessageBox::warning(this, QStringLiteral("校验失败"), QStringLiteral("昵称格式不正确。"));
+            common_widgets::ToastWidget::showToast(this, QStringLiteral("昵称格式不正确"));
             return;
         }
 
         if (!isPhoneValid(phone))
         {
-            QMessageBox::warning(this, QStringLiteral("校验失败"), QStringLiteral("手机号必须是11位数字。"));
+            common_widgets::ToastWidget::showToast(this, QStringLiteral("手机号格式不正确"));
             return;
         }
 
         if (!isPasswordValid(password))
         {
-            QMessageBox::warning(this, QStringLiteral("校验失败"), QStringLiteral("密码格式不正确。"));
+            common_widgets::ToastWidget::showToast(this, QStringLiteral("密码格式不正确"));
             return;
         }
 
@@ -437,18 +418,20 @@ namespace ui::user_widgets
             return;
         }
 
-        QFile avatarFile(m_avatarFilePath);
-        if (!avatarFile.open(QIODevice::ReadOnly))
-        {
-            QMessageBox::warning(this, QStringLiteral("提示"), QStringLiteral("头像读取失败，请重新选择。"));
-            return;
-        }
+        // QFile avatarFile(m_avatarFilePath);
+        // if (!avatarFile.open(QIODevice::ReadOnly))
+        // {
+        //     QMessageBox::warning(this, QStringLiteral("提示"), QStringLiteral("头像读取失败，请重新选择。"));
+        //     return;
+        // }
+
+        QFileInfo fileInfo(m_avatarFilePath);
 
         contract::user::RegisterRequest request{};
         request.nickname = nickname;
         request.phone = phone;
         request.password = password;
-        request.avatar = avatarFile.readAll();
+        request.avatarFileInfo = fileInfo;
 
         auto* appService = m_userApplicationService;
         if (appService == nullptr)
@@ -467,7 +450,7 @@ namespace ui::user_widgets
             setSubmitting(false);
             if (!response.success)
             {
-                QMessageBox::warning(this, QStringLiteral("注册失败"), response.errMsg.value_or(QStringLiteral("未知错误")));
+                common_widgets::ToastWidget::showToast(this, "注册失败" + response.errMsg.value_or(""));
                 return;
             }
             showUserIdDisplay(response.userId.value());
@@ -479,7 +462,7 @@ namespace ui::user_widgets
         auto* userIdDisplay = new UserIdDisplayWidget(userId, nullptr);
         userIdDisplay->setAttribute(Qt::WA_DeleteOnClose, true);
         userIdDisplay->show();
-        hide();
+        this->deleteLater();
     }
 
     QString RegisterWidget::generateMockUserId()
@@ -496,6 +479,8 @@ namespace ui::user_widgets
             return;
         }
 
+        // 把自己关闭
+        this->deleteLater();
         emit ui::common::UIEventBus::instance()->goToLoginRequested();
     }
 }

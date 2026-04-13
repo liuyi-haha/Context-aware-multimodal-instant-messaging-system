@@ -12,10 +12,10 @@ namespace sys::core
     class RecipientRemark
     {
     public:
-        explicit RecipientRemark(const QString& remark = QString())
+        explicit RecipientRemark(const QString& remark = QString(), bool validate = true)
             : remark(remark)
         {
-            if (!checkRecipientRemark(remark))
+            if (validate && !checkRecipientRemark(remark))
             {
                 throw relation::domain::InvalidRecipientRemarkException();
             }

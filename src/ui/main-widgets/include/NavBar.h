@@ -14,6 +14,7 @@ namespace ui::main_widgets
         void initStyle();
         void createSubWidgets();
         void initLayout();
+        void setupConnections();
         explicit NavBar(QWidget* parent = nullptr);
 
     private:

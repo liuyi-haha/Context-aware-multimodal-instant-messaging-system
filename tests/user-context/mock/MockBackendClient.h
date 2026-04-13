@@ -11,7 +11,7 @@ namespace tests::user::mock
     public:
         MOCK_METHOD(RegisterUserResult,
                     registerUser,
-                    (const QString& hashedPassword, const QString& nickname, const QString& phone, const QByteArray&
+                    (const QString& hashedPassword, const QString& nickname, const QString& phone, const QFileInfo&
                         avatar),
                     (override));
 

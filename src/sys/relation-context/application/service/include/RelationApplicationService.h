@@ -22,6 +22,8 @@ namespace sys::relation::application
         Q_OBJECT
 
     public:
+        // todo @liuyi 让通知上下文订阅这个信号，当收到这个信号时，再让通知上下文发出一个EventBus的信号，让UI更新界面
+    public:
         explicit RelationApplicationService(
             domain::FriendApplicationService* friendApplicationService = QInjection::Inject,
             FriendApplicationViewAssembler* friendApplicationViewAssembler = QInjection::Inject,
@@ -42,11 +44,22 @@ namespace sys::relation::application
 
         // 获取所有好友申请
         QList<contract::relation::FriendApplicationView> getFriendApplications();
+        std::optional<contract::relation::FriendApplicationView> getFriendApplication(const QString& applicationId);
 
         // 获取所有聊天会话: 暂时只获取单聊会话，群聊会话后续再扩展
         QList<contract::relation::ChatSessionView> getChatSessions();
 
+        // 获取一个聊天会话
+        std::optional<contract::relation::ChatSessionView> getChatSession(const QString& chatSessionId);
+
         void checkSenderHasPermissionToSendMessage(const QString& chatSessionId); //有问题直接抛异常，没有问题则正常返回
+
+        // 处理收到好友申请的通知
+        void handleFriendApplicationReceived(const QByteArray& notificationBytes);
+
+
+        // 处理好友申请处理结果通知
+        void handleFriendApplicationHandled(const QByteArray& notificationBytes);
 
         enum class NoPermissionReason
         {

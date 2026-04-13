@@ -2,6 +2,7 @@
 // Created by 86150 on 2026/3/28.
 //
 
+#include <QTemporaryFile>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -32,6 +33,14 @@ protected:
             &fileClient,
             &userRepository
         );
+
+        // 创建一个临时文件来模拟头像文件
+        QString avatar = "avatar";
+        if (tempFile.open())
+        {
+            tempFile.write(avatar.toUtf8()); // avatarData 是 QByteArray
+            tempFile.close();
+        }
     }
 
 protected:
@@ -42,6 +51,7 @@ protected:
 
     std::unique_ptr<sys::user::domain::UserValidator> userValidator;
     std::unique_ptr<sys::user::domain::UserService> userService;
+    QTemporaryFile tempFile;
 };
 
 // rule:
@@ -60,7 +70,7 @@ TEST_F(UserServiceTest, 当头像为空时_调用registerUser方法_抛出异常
     tests::utils::expectThrowWithMessage<sys::user::domain::InvalidAvatarException>(
         [&]
         {
-            userService->registerUser("有效昵称", "13800138000", "abc_123", QByteArray());
+            userService->registerUser("有效昵称", "13800138000", "abc_123", QFileInfo());
         },
         "头像不能为空"
     );
@@ -76,7 +86,7 @@ TEST_F(UserServiceTest, 当昵称格式不正确时_调用registerUser方法_抛
     tests::utils::expectThrowWithMessage<sys::user::domain::InvalidNicknameException>(
         [&]
         {
-            userService->registerUser("", "13800138000", "abc_123", QByteArray("avatar"));
+            userService->registerUser("", "13800138000", "abc_123", QFileInfo(tempFile.fileName()));
         },
         "昵称不符合规范"
     );
@@ -92,7 +102,7 @@ TEST_F(UserServiceTest, 当手机号格式不正确时_调用registerUser方法_
     tests::utils::expectThrowWithMessage<sys::user::domain::InvalidPhoneException>(
         [&]
         {
-            userService->registerUser("有效昵称", "1380013800a", "abc_123", QByteArray("avatar"));
+            userService->registerUser("有效昵称", "1380013800a", "abc_123", QFileInfo(tempFile.fileName()));
         },
         "手机号格式不正确"
     );
@@ -110,13 +120,13 @@ TEST_F(UserServiceTest, 当密码格式不正确时_调用registerUser方法_抛
     tests::utils::expectThrowWithMessage<sys::user::domain::InvalidPasswordException>(
         [&]
         {
-            userService->registerUser("有效昵称", "13800138000", "bad-123", QByteArray("avatar"));
+            userService->registerUser("有效昵称", "13800138000", "bad-123", QFileInfo(tempFile.fileName()));
         },
         "密码格式不正确"
     );
 }
 
-TEST_F(UserServiceTest, 当输入合法时_调用registerUser方法_成功注册用户并返回用户ID)
+TEST_F(UserServiceTest, 当输入合法时_调用registerUser方法_成功注册用户并返回用户ID和头像ID)
 {
     EXPECT_CALL(authClient, validateAndHashPassword(QStringLiteral("abc_123")))
         .Times(1)
@@ -124,7 +134,7 @@ TEST_F(UserServiceTest, 当输入合法时_调用registerUser方法_成功注册
 
     EXPECT_CALL(backendClient,
                 registerUser(QStringLiteral("HASH_abc_123"), QStringLiteral("有效昵称"), QStringLiteral("13800138000"),
-                    QByteArray("avatar")))
+                    testing::_))
         .Times(1)
         .WillOnce(testing::Return(sys::user::port::BackendClient::RegisterUserResult{"123456789", "A10001"}));
 
@@ -135,7 +145,7 @@ TEST_F(UserServiceTest, 当输入合法时_调用registerUser方法_成功注册
         "有效昵称",
         "13800138000",
         "abc_123",
-        QByteArray("avatar")
+        QFileInfo(tempFile.fileName())
     );
 
     EXPECT_EQ(userId, "123456789");
@@ -149,7 +159,7 @@ TEST_F(UserServiceTest, 当手机号已被注册时_调用registerUser方法_抛
 
     EXPECT_CALL(backendClient,
                 registerUser(QStringLiteral("HASH_abc_123"), QStringLiteral("有效昵称"), QStringLiteral("13800138000"),
-                    QByteArray("avatar")))
+                    testing::_))
         .Times(1)
         .WillOnce(testing::Throw(sys::user::domain::PhoneHasBeenRegisteredException()));
 
@@ -163,7 +173,7 @@ TEST_F(UserServiceTest, 当手机号已被注册时_调用registerUser方法_抛
                 "有效昵称",
                 "13800138000",
                 "abc_123",
-                QByteArray("avatar")
+                QFileInfo(tempFile.fileName())
             );
         },
         "手机号已被注册"

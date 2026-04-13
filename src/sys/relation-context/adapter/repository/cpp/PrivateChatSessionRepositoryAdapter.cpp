@@ -39,6 +39,7 @@ namespace sys::relation::adapter
     void PrivateChatSessionRepositoryAdapter::save(
         const QSharedPointer<domain::PrivateChatSession>& privateChatSession)
     {
+        ensurePrivateChatSessionTableReady(this->privateDatabase->getDataBase());
         if (privateChatSession == nullptr)
         {
             return;
@@ -65,6 +66,7 @@ namespace sys::relation::adapter
     QSharedPointer<domain::PrivateChatSession> PrivateChatSessionRepositoryAdapter::of(
         const QString& privateChatSessionId)
     {
+        ensurePrivateChatSessionTableReady(this->privateDatabase->getDataBase());
         QSqlDatabase db = privateDatabase->getDataBase();
 
         QSqlQuery query(db);
@@ -88,6 +90,7 @@ namespace sys::relation::adapter
     QSharedPointer<domain::PrivateChatSession> PrivateChatSessionRepositoryAdapter::ofFriendShipId(
         const QString& friendShipId)
     {
+        ensurePrivateChatSessionTableReady(this->privateDatabase->getDataBase());
         QSqlDatabase db = privateDatabase->getDataBase();
 
         QSqlQuery query(db);
@@ -115,6 +118,7 @@ namespace sys::relation::adapter
         {
             return {};
         }
+        ensurePrivateChatSessionTableReady(this->privateDatabase->getDataBase());
 
         QSqlDatabase db = privateDatabase->getDataBase();
         ensurePrivateChatSessionTableReady(db);

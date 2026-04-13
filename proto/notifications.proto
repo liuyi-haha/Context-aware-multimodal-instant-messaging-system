@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package proto.notification;
+
+option java_package = "com.liuyi.notification.notifications";
+option java_multiple_files = true;
+
+// ===== 顶层包装消息 =====
+message WebSocketNotification {
+  NotificationType type = 1;
+  bytes payload = 2;
+}
+
+enum NotificationType {
+  TYPE_UNKNOWN = 0;
+  TYPE_FRIEND_APPLICATION_RECEIVED = 1;
+  TYPE_FRIEND_APPLICATION_HANDLED = 2;
+  TYPE_MESSAGE_RECEIVED = 3;   // 新增
+}
+
+// ===== 好友申请收到通知 =====
+message FriendApplicationReceivedNotification {
+  string applicant_user_id = 1;      // 申请人用户ID
+  string application_id = 2;         // 申请ID
+  string verification_message = 3;   // 验证消息
+  string send_time = 4;               // 发送时间(ISO字符串格式)
+}
+
+// ===== 好友申请处理结果类型枚举 =====
+enum HandleFriendApplicationResultType {
+  HANDLE_RESULT_UNKNOWN = 0;
+  HANDLE_RESULT_APPROVED = 1;   // 同意
+  HANDLE_RESULT_REJECTED = 2;   // 拒绝
+}
+
+// ===== 好友申请已处理通知 =====
+message FriendApplicationHandledNotification {
+  string operate_time = 1;                       // 操作时间(ISO字符串格式)
+  string application_id = 2;                    // 申请ID
+  HandleFriendApplicationResultType result_type = 3;  // 处理结果
+  bool is_new_friendship = 4;                   // 是否建立了新好友关系（false时以下字段无值）
+  string friendship_id = 5;                     // 好友关系ID
+  string private_chat_session_id = 6;           // 私聊会话ID
+  string applicant_participant_id = 7;          // 申请人参与方ID
+  string target_user_participant_id = 8;        // 目标用户参与方ID
+}
+
+// ===== 消息类型枚举 =====
+enum MessageType {
+  MESSAGE_TYPE_UNKNOWN = 0;
+  MESSAGE_TYPE_TEXT = 1;      // 文本消息
+  // 后续扩展: IMAGE, AUDIO, VIDEO, FILE 等
+}
+
+// ===== 消息收到通知 =====
+message MessageReceivedNotification {
+  MessageType message_type = 1;     // 消息类型
+  string send_time = 2;              // 发送时间(ISO字符串格式)
+  string session_id = 3;             // 会话ID
+  string message_id = 4;             // 消息ID
+  int32 seq_in_session = 5;          // 会话内消息序号
+  string sender_user_id = 6;         // 发送者用户ID
+  string text_content = 7;           // 文本消息内容(当前版本仅文本，后续扩展其他字段)
+}

@@ -70,10 +70,10 @@ namespace
 
                 context.otherUserIds.insert(participant->userIdValue());
                 context.sessionIdToOtherUserId[sessionId] = participant->userIdValue();
-                if (participant->hasRemark())
-                {
-                    context.sessionIdToOtherUserRemark[sessionId] = participant->remarkValue();
-                }
+                // 这里是一定要有备注的
+                assert(participant->hasRemark());
+                context.sessionIdToOtherUserRemark[sessionId] = participant->remarkValue();
+
                 break;
             }
         }

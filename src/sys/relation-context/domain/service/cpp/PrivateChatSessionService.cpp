@@ -67,6 +67,11 @@ namespace sys::relation::domain
         return privateChatSessionRepository->ofAll(sessionIds);
     }
 
+    QSharedPointer<PrivateChatSession> PrivateChatSessionService::getPrivateChatSession(const QString& chatSessionId)
+    {
+        return privateChatSessionRepository->of(chatSessionId);
+    }
+
     void PrivateChatSessionService::checkCurrentUserHasPermissionToSendMessage(const QString& chatSessionId)
     {
         checkConfig();

@@ -17,7 +17,7 @@ class QTimer;
 
 namespace ui::user_widgets
 {
-    class RegisterWidget: public QWidget
+    class RegisterWidget : public QWidget
     {
         Q_OBJECT
 
@@ -34,7 +34,6 @@ namespace ui::user_widgets
         void setupConnections();
         void updateValidationState();
         void setSubmitting(bool submitting);
-        void tickRegisterLoading();
 
         static bool isNicknameValid(const QString& nickname);
         static bool isPhoneValid(const QString& phone);
@@ -57,9 +56,7 @@ namespace ui::user_widgets
         QPushButton* m_registerButton;
         QPushButton* m_goToLoginLink;
         QString m_avatarFilePath;
-        QTimer* m_registerLoadingTimer;
         bool m_isSubmitting;
-        int m_loadingFrameIndex;
         sys::user::application::UserApplicationService* m_userApplicationService;
     };
 }

@@ -1,9 +1,85 @@
-openapi: 3.1.0
+openapi: 3.0.0
 info:
-  title: Title
-  description: Title
+  title: 用户微服务提供的API接口文档
   version: 1.0.0
+
 servers:
-  - url: 'https'
+  - url: http://localhost:8080/api/smart-server
+
+# 定义认证方式
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 网关验证Token后会在Header中注入 X-User-Id
+
+  # 定义网关注入的 Header 参数（可复用）
+  parameters:
+    XUserId:
+      name: X-User-Id
+      in: header
+      required: true
+      schema:
+        type: string
+      description: 网关从Token解析后注入的用户ID（客户端无需传递）
+
+
 paths:
-  
+  # ==================== 获取智能回复 ====================
+  /smart-replys/sessions/{sessionId}:
+    post:
+      operationId: getSmartReply
+      description: 获取智能回复（需要认证）
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 单聊会话ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userCommand
+              properties:
+                userCommand:
+                  type: string
+                  description: 用户指令文本
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+                    description: 是否成功
+                  data:
+                    type: object
+                    properties:
+                      replyText:
+                        type: string
+                        description: 智能回复文本
+                  errCode:
+                    type: string
+                    description: 错误码
+                    enum:
+                      - "SESSION_NOT_FOUND"
+                      - "USER_PROFILE_NOT_FOUND"
+                      - "MESSAGE_HISTORY_NOT_FOUND"
+                      - "UNKNOWN_ERROR"
+                  errMsg:
+                    type: string
+                    description: 错误信息
